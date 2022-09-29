@@ -8,10 +8,6 @@ const tripSchema = new Schema(
       type: Date,
       required: true,
     },
-    trip_type: {
-      type: String,
-      required: true,
-    },
     user_id: {
       type: Schema.Types.ObjectId,
       ref: "User",
