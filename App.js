@@ -6,7 +6,7 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
 
-const tripRoutes = require("./routes/trip");
+const tripRoutes = require("./routes/office/trip");
 const authRoutes = require("./routes/auth");
 
 const app = express();
