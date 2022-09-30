@@ -6,8 +6,13 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
 
-const tripRoutes = require("./routes/office/trip");
 const authRoutes = require("./routes/auth");
+const vehicleRoutes = require("./routes/vehicle");
+const gasStationRoutes = require("./routes/gas_station");
+
+const officeTripRoutes = require("./routes/office/trip");
+const officeDieselStationRoutes = require("./routes/office/diesel");
+const officeLocationStationRoutes = require("./routes/office/location");
 
 const app = express();
 
@@ -47,8 +52,21 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/trip", tripRoutes);
+// Authentication
 app.use("/auth", authRoutes);
+// Vehicle
+app.use("/vehicle", vehicleRoutes);
+//  Gas Station
+app.use("/gas-station", gasStationRoutes);
+
+// Office Routes
+app.use("/office", officeTripRoutes);
+app.use("/office", officeLocationStationRoutes);
+app.use("/office", officeDieselStationRoutes);
+
+// Hauling Routes
+// Delivery Routes
+// Feeds Delivery Routes
 
 // Error Cb
 app.use((error, req, res, next) => {

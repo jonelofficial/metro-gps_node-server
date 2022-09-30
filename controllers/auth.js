@@ -1,13 +1,14 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const fs = require("fs");
 const path = require("path");
 const { validationResult } = require("express-validator");
 require("dotenv").config();
 
+const User = require("../models/user");
+
 exports.updateUser = (req, res, next) => {
-  if (req.role !== "super_admin") {
+  if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
     res.status(403).json({ message: "Please make sure you're an admin" });
@@ -41,8 +42,8 @@ exports.updateUser = (req, res, next) => {
   User.findById(userId)
     .then(async (user) => {
       if (!user) {
-        const error = new Error("Couldn not find user");
-        res.status(404).json({ message: "Couldn not find user" });
+        const error = new Error("Could not find user");
+        res.status(404).json({ message: "Could not find user" });
         error.statusCode = 404;
         throw error;
       }
@@ -75,7 +76,7 @@ exports.updateUser = (req, res, next) => {
 };
 
 exports.deleteUser = (req, res, next) => {
-  if (req.role !== "super_admin") {
+  if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
     res.status(403).json({ message: "Please make sure you're an admin" });
@@ -86,8 +87,8 @@ exports.deleteUser = (req, res, next) => {
   User.findById(userId)
     .then((post) => {
       if (!post) {
-        const error = new Error("Couldn not find user");
-        res.status(404).json({ message: "Couldn not find user" });
+        const error = new Error("Could not find user");
+        res.status(404).json({ message: "Could not find user" });
         error.statusCode = 404;
         throw error;
       }
@@ -95,7 +96,6 @@ exports.deleteUser = (req, res, next) => {
       return User.findByIdAndRemove(userId);
     })
     .then((result) => {
-      console.log(result);
       res.status(200).json({ message: "Success delete user" });
     })
     .catch((err) => {
@@ -107,7 +107,7 @@ exports.deleteUser = (req, res, next) => {
 };
 
 exports.getUsers = (req, res, next) => {
-  if (req.role !== "super_admin") {
+  if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
     res.status(403).json({ message: "Please make sure you're an admin" });
@@ -115,7 +115,7 @@ exports.getUsers = (req, res, next) => {
   }
   // auth/users?page=
   const currentPage = req.query.page;
-  const perPage = 2;
+  const perPage = 25;
   let totalItems;
 
   User.find()
