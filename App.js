@@ -11,18 +11,6 @@ const authRoutes = require("./routes/auth");
 
 const app = express();
 
-app.use(bodyParse.json());
-
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Origin", "GET, POST, PUT, PATCH, DELETE");
-  res.setHeader("Access-Control-Allow-Origin", "Content-Type , Authorization");
-  next();
-});
-
-app.use("/trip", tripRoutes);
-app.use("/auth", authRoutes);
-
 // Images Upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -45,8 +33,22 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+app.use(bodyParse.json());
+
 app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
 app.use("/images", express.static(path.join(__dirname, "images")));
+
+// END IMAGE UPLOAD
+
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "GET, POST, PUT, PATCH, DELETE");
+  res.setHeader("Access-Control-Allow-Origin", "Content-Type , Authorization");
+  next();
+});
+
+app.use("/trip", tripRoutes);
+app.use("/auth", authRoutes);
 
 // Error Cb
 app.use((error, req, res, next) => {

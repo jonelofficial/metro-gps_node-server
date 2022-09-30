@@ -15,12 +15,18 @@ exports.updateUser = (req, res, next) => {
   }
 
   const userId = req.params.userId;
+  let newImageURl;
+
   const error = validationResult(req);
   if (!error.isEmpty()) {
     const errorMsg = [];
     error.errors.map((item) => errorMsg.push(item.msg));
     const err = new Error(errorMsg);
     throw err;
+  }
+
+  if (req.file) {
+    newImageURl = req.file.path.replace("\\", "/");
   }
 
   const employee_id = req.body.employee_id;
@@ -30,7 +36,6 @@ exports.updateUser = (req, res, next) => {
   const password = req.body.password;
   const trip_template = req.body.trip_template;
   const role = req.body.role;
-  const profile = req.body.profile;
   // image validation here
 
   User.findById(userId)
@@ -49,13 +54,13 @@ exports.updateUser = (req, res, next) => {
       const hashedPw = await bcrypt.hash(password, 12);
 
       user.employee_id = employee_id;
-      user.first_name = employee_id;
+      user.first_name = first_name;
       user.last_name = last_name;
       user.username = username;
       user.password = hashedPw;
       user.trip_template = trip_template;
       user.role = role;
-      user.profile = profile;
+      user.profile = newImageURl;
       return user.save();
     })
     .then((result) => {
@@ -141,6 +146,7 @@ exports.getUsers = (req, res, next) => {
 
 exports.createUser = (req, res, next) => {
   const error = validationResult(req);
+  let newImageURl;
   if (!error.isEmpty()) {
     const errorMsg = [];
     error.errors.map((item) => errorMsg.push(item.msg));
@@ -148,6 +154,10 @@ exports.createUser = (req, res, next) => {
     err.statusCode = 422;
     throw err;
   }
+  if (req.file) {
+    newImageURl = req.file.path.replace("\\", "/");
+  }
+
   const employee_id = req.body.employee_id;
   const first_name = req.body.first_name;
   const last_name = req.body.last_name;
@@ -155,7 +165,7 @@ exports.createUser = (req, res, next) => {
   const password = req.body.password;
   const trip_template = req.body.trip_template;
   const role = req.body.role;
-  const profile = req.body.profile;
+  const profile = newImageURl;
 
   bcrypt
     .hash(password, 12)

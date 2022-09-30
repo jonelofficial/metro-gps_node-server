@@ -39,4 +39,4 @@ const tripSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Trip", tripSchema);
+module.exports = mongoose.model("TripOffice", tripSchema);
