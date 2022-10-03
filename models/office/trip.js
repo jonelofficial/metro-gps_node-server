@@ -18,6 +18,13 @@ const tripSchema = new Schema(
       ref: "Vehicle",
       required: true,
     },
+    locations: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "LocationOffice",
+      },
+    ],
+    diesels: [{ type: Schema.Types.ObjectId, ref: "DieselOffice" }],
     odometer: {
       type: Number,
       required: true,

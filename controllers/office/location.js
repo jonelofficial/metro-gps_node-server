@@ -1,4 +1,5 @@
 const Location = require("../../models/office/location");
+const Trip = require("../../models/office/trip");
 
 exports.getLocations = (req, res, next) => {
   const currentPage = req.query.page;
@@ -49,6 +50,19 @@ exports.createLocation = (req, res, next) => {
   location
     .save()
     .then((result) => {
+      Trip.findById({ _id: trip_id })
+        .then((trip) => {
+          console.log(trip);
+          trip.locations = [...trip.locations, { _id: result.id }];
+
+          return trip.save();
+        })
+        .catch((err) => {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        });
       res.status(201).json({
         message: "Success create location",
         data: result,

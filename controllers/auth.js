@@ -229,8 +229,8 @@ exports.login = (req, res, next) => {
           last_name: loadedUser.last_name,
           trip_template: loadedUser.trip_template,
         },
-        process.env.SECRET_KEY,
-        { expiresIn: "12h" }
+        process.env.SECRET_KEY
+        // { expiresIn: "12h" }
       );
       res.status(201).json({ token: token });
     })

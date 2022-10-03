@@ -9,4 +9,9 @@ router.post("/trip", isAuth, tripController.createTrip);
 router.put("/trip/:tripId", isAuth, tripController.updateTrip);
 router.delete("/trip/:tripId", isAuth, tripController.deleteTrip);
 
+//:page
+router.get("/trips/user", isAuth, tripController.getUserTrip);
+//:searhDate&page
+router.get("/trips/search", isAuth, tripController.searchUserTrip);
+
 module.exports = router;

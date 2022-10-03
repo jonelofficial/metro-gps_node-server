@@ -2,6 +2,101 @@ const fs = require("fs");
 const path = require("path");
 
 const Trip = require("../../models/office/trip");
+const Location = require("../../models/office/location");
+const Diesel = require("../../models/office/diesel");
+
+exports.searchUserTrip = (req, res, next) => {
+  const searchDate = req.query.searchDate;
+  const currentPage = req.query.page;
+  const perPage = 25;
+  let totalItems;
+
+  Trip.find({
+    trip_date: {
+      $gte: `${searchDate}T00:00:00`,
+      $lte: `${searchDate}T23:59:59`,
+    },
+  })
+    .countDocuments()
+    .then((count) => {
+      totalItems = count;
+      return Trip.find({
+        trip_date: {
+          $gte: `${searchDate}T00:00:00`,
+          $lte: `${searchDate}T23:59:59`,
+        },
+      })
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage)
+        .populate("locations")
+        .populate("user_id", { trip_template: 1 })
+        .populate("vehicle_id", { name: 1 });
+    })
+    .then((result) => {
+      if (result.length === 0) {
+        const error = new Error("Could not found trip");
+        error.statusCode = 404;
+        res.status(404).json({
+          message: "Could not found trip",
+          data: result,
+          pagination: {
+            totalItems: totalItems,
+            currentPage: parseInt(currentPage),
+          },
+        });
+        throw error;
+      }
+      res.status(201).json({
+        message: "Success search trip",
+        data: result,
+        pagination: {
+          totalItems: totalItems,
+          currentPage: parseInt(currentPage),
+        },
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.getUserTrip = (req, res, next) => {
+  const userId = req.userId;
+  const currentPage = req.query.page;
+  const perPage = 25;
+  let totalItems;
+
+  Trip.find({ user_id: userId })
+    .countDocuments()
+    .then((count) => {
+      totalItems = count;
+      return Trip.find({ user_id: userId })
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage)
+        .populate("locations")
+        .populate("user_id", { trip_template: 1 })
+        .populate("vehicle_id", { name: 1 });
+    })
+    .then((result) => {
+      res.status(201).json({
+        message: "Fetch trip successfully",
+        data: result,
+        pagination: {
+          totalItems: totalItems,
+          currentPage: parseInt(currentPage),
+        },
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
 
 exports.getTrips = (req, res, next) => {
   // office/trips?page=
@@ -155,6 +250,27 @@ exports.deleteTrip = (req, res, next) => {
       }
 
       trip?.odometer_image_path && clearImage(trip.odometer_image_path);
+
+      // Delete all location related to trip id
+      Location.find({ trip_id: tripId }).then((location) => {
+        if (!location) {
+          return null;
+        }
+        location.map(async (item) => {
+          await Location.findByIdAndRemove(item._id);
+        });
+      });
+
+      // Delete all diesel related to trip id
+      Diesel.find({ trip_id: tripId }).then((diesel) => {
+        if (!diesel) {
+          return null;
+        }
+        diesel.map(async (item) => {
+          await Diesel.findByIdAndRemove(item._id);
+        });
+      });
+
       return Trip.findByIdAndRemove(tripId);
     })
     .then((result) => {

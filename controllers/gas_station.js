@@ -32,10 +32,10 @@ exports.getStation = (req, res, next) => {
 };
 
 exports.createStation = (req, res, next) => {
-  const name = req.body.name;
+  const label = req.body.label;
 
   const station = new GasStation({
-    name: name,
+    label: label,
   });
 
   station
@@ -62,7 +62,7 @@ exports.updateStation = (req, res, next) => {
   }
   const stationId = req.params.stationId;
 
-  const name = req.body.name;
+  const label = req.body.label;
 
   GasStation.findById(stationId)
     .then((station) => {
@@ -72,7 +72,7 @@ exports.updateStation = (req, res, next) => {
         throw error;
       }
 
-      station.name = name;
+      station.label = label;
 
       return station.save();
     })
