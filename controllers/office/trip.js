@@ -29,6 +29,7 @@ exports.searchUserTrip = (req, res, next) => {
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .populate("locations")
+        .populate("diesels")
         .populate("user_id", { trip_template: 1 })
         .populate("vehicle_id", { name: 1 });
     })
@@ -77,6 +78,7 @@ exports.getUserTrip = (req, res, next) => {
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .populate("locations")
+        .populate("diesels")
         .populate("user_id", { trip_template: 1 })
         .populate("vehicle_id", { name: 1 });
     })
@@ -130,20 +132,19 @@ exports.getTrips = (req, res, next) => {
     });
 };
 
-exports.createTrip = (req, res, next) => {
+exports.createTrip = async (req, res, next) => {
   let newImageUrl;
   if (req.file) {
     newImageUrl = req.file.path.replace("\\", "/");
   }
 
-  // const trip_date = req.body.trip_date;
-  const user_id = req.body.user_id;
+  const user_id = req.userId;
   const vehicle_id = req.body.vehicle_id;
   const odometer = req.body.odometer;
-  const odometer_done = req.body.odometer_done;
-  const odometer_image_path = newImageUrl;
+  const odometer_done = req.body.odometer_done || null;
+  const odometer_image_path = newImageUrl || null;
   const companion = req.body.companion;
-  const points = JSON.parse(req.body.points);
+  const points = req.body.points || null;
 
   const trip = new Trip({
     user_id: user_id,

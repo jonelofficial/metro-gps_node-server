@@ -52,7 +52,6 @@ exports.createLocation = (req, res, next) => {
     .then((result) => {
       Trip.findById({ _id: trip_id })
         .then((trip) => {
-          console.log(trip);
           trip.locations = [...trip.locations, { _id: result.id }];
 
           return trip.save();

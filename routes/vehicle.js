@@ -9,4 +9,7 @@ router.post("/car", isAuth, vehicleController.createVehicle);
 router.put("/car/:vehicleId", isAuth, vehicleController.updateVehicle);
 router.delete("/car/:vehicleId", isAuth, vehicleController.deleteVehicle);
 
+//:plateNo
+router.get("/car/user", isAuth, vehicleController.getUserVehicle);
+
 module.exports = router;

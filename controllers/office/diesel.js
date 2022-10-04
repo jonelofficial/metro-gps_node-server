@@ -1,4 +1,5 @@
 const Diesel = require("../../models/office/diesel");
+const Trip = require("../../models/office/trip");
 
 exports.getDiesel = (req, res, next) => {
   const currentPage = req.query.page;
@@ -50,6 +51,18 @@ exports.createDiesel = (req, res, next) => {
   diesel
     .save()
     .then((result) => {
+      Trip.findById({ _id: trip_id })
+        .then((trip) => {
+          trip.diesels = [...trip.diesels, { _id: result.id }];
+
+          return trip.save();
+        })
+        .catch((err) => {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        });
       res.status(201).json({
         message: "Success create diesel",
         data: result,

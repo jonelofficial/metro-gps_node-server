@@ -1,5 +1,27 @@
 const Vehicle = require("../models/vehicle");
 
+exports.getUserVehicle = (req, res, next) => {
+  const plateNo = req.query.plateNo;
+
+  Vehicle.find({ plate_no: plateNo })
+    .then((result) => {
+      if (result.length === 0) {
+        const error = new Error("Could not find vehicle");
+        error.statusCode = 404;
+        res.status(404).json({ error: "Could not find vehicle" });
+        throw error;
+      }
+
+      res.status(201).json({ message: "Success get vehicle", data: result });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 exports.getVehicles = (req, res, next) => {
   const currentPage = req.query.page;
   const perPage = 25;
