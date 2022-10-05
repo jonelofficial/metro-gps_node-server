@@ -32,7 +32,7 @@ exports.getDiesel = (req, res, next) => {
 };
 
 exports.createDiesel = (req, res, next) => {
-  const gas_station = req.body.gas_station;
+  const gas_station_id = req.body.gas_station_id;
   const trip_id = req.body.trip_id;
   const odometer = req.body.odometer;
   const liter = req.body.liter;
@@ -40,7 +40,7 @@ exports.createDiesel = (req, res, next) => {
   const long = req.body.long;
 
   const diesel = new Diesel({
-    gas_station: gas_station,
+    gas_station_id: gas_station_id,
     trip_id: trip_id,
     odometer: odometer,
     liter: liter,

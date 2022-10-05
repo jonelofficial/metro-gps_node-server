@@ -31,7 +31,8 @@ exports.searchUserTrip = (req, res, next) => {
         .populate("locations")
         .populate("diesels")
         .populate("user_id", { trip_template: 1 })
-        .populate("vehicle_id", { name: 1 });
+        .populate("vehicle_id", { name: 1 })
+        .sort({ trip_date: "desc" });
     })
     .then((result) => {
       if (result.length === 0) {
@@ -80,7 +81,8 @@ exports.getUserTrip = (req, res, next) => {
         .populate("locations")
         .populate("diesels")
         .populate("user_id", { trip_template: 1 })
-        .populate("vehicle_id", { name: 1 });
+        .populate("vehicle_id", { name: 1 })
+        .sort({ trip_date: "desc" });
     })
     .then((result) => {
       res.status(201).json({
@@ -133,6 +135,7 @@ exports.getTrips = (req, res, next) => {
 };
 
 exports.createTrip = async (req, res, next) => {
+  console.log(req);
   let newImageUrl;
   if (req.file) {
     newImageUrl = req.file.path.replace("\\", "/");
@@ -172,12 +175,7 @@ exports.createTrip = async (req, res, next) => {
 };
 
 exports.updateTrip = (req, res, next) => {
-  if (req.role !== "admin") {
-    const error = new Error("Please make sure you're an admin");
-    error.statusCode = 403;
-    throw error;
-  }
-
+  console.log(req);
   const tripId = req.params.tripId;
   let newImageURL;
 
@@ -185,13 +183,13 @@ exports.updateTrip = (req, res, next) => {
     newImageURL = req.file.path.replace("\\", "/");
   }
 
-  const user_id = req.body.user_id;
-  const vehicle_id = req.body.vehicle_id;
-  const odometer = req.body.odometer;
-  const odometer_done = req.body.odometer_done;
-  const odometer_image_path = newImageURL;
-  const companion = req.body.companion;
-  const points = req.body.points && JSON.parse(req.body.points);
+  const user_id = req.body.user_id || null;
+  const vehicle_id = req.body.vehicle_id || null;
+  const odometer = req.body.odometer || null;
+  const odometer_done = req.body.odometer_done || null;
+  const odometer_image_path = newImageURL || null;
+  const companion = req.body.companion || null;
+  const points = req.body.points || null;
 
   Trip.findById(tripId)
     .then((trip) => {
@@ -208,15 +206,32 @@ exports.updateTrip = (req, res, next) => {
       ) {
         clearImage(trip.odometer_image_path);
       }
-      trip.user_id = user_id;
-      trip.vehicle_id = vehicle_id;
-      trip.odometer = odometer;
-      trip.odometer_done = odometer_done;
-      trip.odometer_image_path = odometer_image_path;
-      trip.companion = companion;
-      trip.points = points;
 
-      return trip.save();
+      trip.user_id = user_id || trip.user_id;
+      trip.vehicle_id = vehicle_id || trip.vehicle_id;
+      trip.odometer = odometer || trip.odometer;
+      trip.odometer_done = odometer_done || trip.odometer_done;
+      trip.odometer_image_path =
+        odometer_image_path || trip.odometer_image_path;
+      trip.companion = companion || trip.companion;
+      trip.points = points || trip.points;
+
+      return Trip.findOneAndUpdate(
+        { _id: trip._id },
+        {
+          user_id: user_id || trip.user_id,
+          vehicle_id: vehicle_id || trip.vehicle_id,
+          odometer: odometer || trip.odometer,
+          odometer_done: odometer_done || trip.odometer_done,
+          odometer_image_path: odometer_image_path || trip.odometer_image_path,
+          companion: companion || trip.companion,
+          points: points || trip.points,
+        }
+      )
+        .populate("locations")
+        .populate("diesels")
+        .populate("user_id", { trip_template: 1 })
+        .populate("vehicle_id", { name: 1 });
     })
     .then((result) => {
       res.status(200).json({
@@ -250,7 +265,9 @@ exports.deleteTrip = (req, res, next) => {
         throw error;
       }
 
-      trip?.odometer_image_path && clearImage(trip.odometer_image_path);
+      if (trip?.odometer_image_path) {
+        clearImage(trip.odometer_image_path);
+      }
 
       // Delete all location related to trip id
       Location.find({ trip_id: tripId }).then((location) => {
@@ -289,6 +306,6 @@ exports.deleteTrip = (req, res, next) => {
 };
 
 const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
+  filePath = path.join(__dirname, "../..", filePath);
   fs.unlink(filePath, (err) => console.log(err));
 };

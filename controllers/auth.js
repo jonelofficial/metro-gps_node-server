@@ -30,17 +30,18 @@ exports.updateUser = (req, res, next) => {
     newImageURl = req.file.path.replace("\\", "/");
   }
 
-  const employee_id = req.body.employee_id;
-  const first_name = req.body.first_name;
-  const last_name = req.body.last_name;
-  const username = req.body.username;
-  const password = req.body.password;
-  const trip_template = req.body.trip_template;
-  const role = req.body.role;
+  const employee_id = req.body.employee_id || null;
+  const first_name = req.body.first_name || null;
+  const last_name = req.body.last_name || null;
+  const username = req.body.username || null;
+  const password = req.body.password || null;
+  const trip_template = req.body.trip_template || null;
+  const role = req.body.role || null;
+  const profile = newImageURl || null;
   // image validation here
 
   User.findById(userId)
-    .then(async (user) => {
+    .then((user) => {
       if (!user) {
         const error = new Error("Could not find user");
         res.status(404).json({ message: "Could not find user" });
@@ -52,16 +53,36 @@ exports.updateUser = (req, res, next) => {
         clearImage(user.profile);
       }
 
-      const hashedPw = await bcrypt.hash(password, 12);
-
-      user.employee_id = employee_id;
-      user.first_name = first_name;
-      user.last_name = last_name;
-      user.username = username;
-      user.password = hashedPw;
-      user.trip_template = trip_template;
-      user.role = role;
-      user.profile = newImageURl;
+      req.body.password &&
+        bcrypt
+          .hash(password, 12)
+          .then((hashedPw) => {
+            user.employee_id = employee_id || user.employee_id;
+            user.first_name = first_name || user.first_name;
+            user.last_name = last_name || user.last_name;
+            user.username = username || user.username;
+            user.password = hashedPw || user.password;
+            user.trip_template = trip_template || user.trip_template;
+            user.role = role || user.role;
+            user.profile = profile || user.profile;
+            return user.save();
+          })
+          .then((result) => {
+            res.status(200).json({ message: "User udpated", user: result });
+          })
+          .catch((err) => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
+          });
+      user.employee_id = employee_id || user.employee_id;
+      user.first_name = first_name || user.first_name;
+      user.last_name = last_name || user.last_name;
+      user.username = username || user.username;
+      user.trip_template = trip_template || user.trip_template;
+      user.role = role || user.role;
+      user.profile = profile || user.profile;
       return user.save();
     })
     .then((result) => {
