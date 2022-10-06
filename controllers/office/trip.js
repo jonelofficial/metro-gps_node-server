@@ -200,10 +200,7 @@ exports.updateTrip = (req, res, next) => {
         throw error;
       }
 
-      if (
-        odometer_image_path !== trip.odometer_image_path &&
-        trip.odometer_image_path
-      ) {
+      if (req.file && odometer_image_path !== trip.odometer_image_path) {
         clearImage(trip.odometer_image_path);
       }
 
