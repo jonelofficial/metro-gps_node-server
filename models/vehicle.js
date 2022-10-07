@@ -27,6 +27,9 @@ const vehicleSchema = new Schema({
     type: Number,
     required: true,
   },
+  profile: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("Vehicle", vehicleSchema);
