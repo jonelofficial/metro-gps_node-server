@@ -54,12 +54,18 @@ exports.getVehicles = (req, res, next) => {
 };
 
 exports.createVehicle = (req, res, next) => {
+  let newImageURL;
+  if (req.file) {
+    newImageURL = req.file.path.replace("\\", "/");
+  }
+
   const plate_no = req.body.plate_no;
   const vehicle_type = req.body.vehicle_type;
   const name = req.body.name;
   const brand = req.body.brand;
   const fuel_type = req.body.fuel_type;
   const km_per_liter = req.body.km_per_liter;
+  const profile = newImageURL;
 
   const vehicle = new Vehicle({
     plate_no: plate_no,
@@ -68,6 +74,7 @@ exports.createVehicle = (req, res, next) => {
     brand: brand,
     fuel_type: fuel_type,
     km_per_liter: km_per_liter,
+    profile: profile,
   });
 
   vehicle
@@ -93,14 +100,20 @@ exports.updateVehicle = (req, res, next) => {
     throw error;
   }
 
+  let newImageURL;
+  if (req.file) {
+    newImageURL = req.file.path.replace("\\", "/");
+  }
+
   const vehicleId = req.params.vehicleId;
 
-  const plate_no = req.body.plate_no;
-  const vehicle_type = req.body.vehicle_type;
-  const name = req.body.name;
-  const brand = req.body.brand;
-  const fuel_type = req.body.fuel_type;
-  const km_per_liter = req.body.km_per_liter;
+  const plate_no = req.body.plate_no || null;
+  const vehicle_type = req.body.vehicle_type || null;
+  const name = req.body.name || null;
+  const brand = req.body.brand || null;
+  const fuel_type = req.body.fuel_type || null;
+  const km_per_liter = req.body.km_per_liter || null;
+  const profile = newImageURL || null;
 
   Vehicle.findById(vehicleId)
     .then((vehicle) => {
@@ -110,12 +123,17 @@ exports.updateVehicle = (req, res, next) => {
         throw error;
       }
 
-      vehicle.plate_no = plate_no;
-      vehicle.vehicle_type = vehicle_type;
-      vehicle.name = name;
-      vehicle.brand = brand;
-      vehicle.fuel_type = fuel_type;
-      vehicle.km_per_liter = km_per_liter;
+      if (profile !== vehicle.profile && vehicle.profile) {
+        clearImage(vehicle.profile);
+      }
+
+      vehicle.plate_no = plate_no || vehicle.plate_no;
+      vehicle.vehicle_type = vehicle_type || vehicle.vehicle_type;
+      vehicle.name = name || vehicle.name;
+      vehicle.brand = brand || vehicle.brand;
+      vehicle.fuel_type = fuel_type || vehicle.fuel_type;
+      vehicle.km_per_liter = km_per_liter || vehicle.km_per_liter;
+      vehicle.profile = profile || vehicle.profile;
 
       return vehicle.save();
     })
@@ -149,7 +167,7 @@ exports.deleteVehicle = (req, res, next) => {
         error.statusCode = 500;
         throw error;
       }
-
+      vehicle?.profile && clearImage(vehicle.profile);
       return Vehicle.findByIdAndRemove(vehicleId);
     })
     .then((result) => {
@@ -164,4 +182,9 @@ exports.deleteVehicle = (req, res, next) => {
       }
       next(500);
     });
+};
+
+const clearImage = (filePath) => {
+  filePath = path.join(__dirname, "..", filePath);
+  fs.unlink(filePath, (err) => console.log(err));
 };
