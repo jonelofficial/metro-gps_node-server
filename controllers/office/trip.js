@@ -135,7 +135,6 @@ exports.getTrips = (req, res, next) => {
 };
 
 exports.createTrip = async (req, res, next) => {
-  console.log(req);
   let newImageUrl;
   if (req.file) {
     newImageUrl = req.file.path.replace("\\", "/");
@@ -175,7 +174,6 @@ exports.createTrip = async (req, res, next) => {
 };
 
 exports.updateTrip = (req, res, next) => {
-  console.log(req);
   const tripId = req.params.tripId;
   let newImageURL;
 
