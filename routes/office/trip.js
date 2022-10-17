@@ -8,6 +8,7 @@ router.get("/trips", isAuth, tripController.getTrips);
 router.post("/trip", isAuth, tripController.createTrip);
 router.put("/trip/:tripId", isAuth, tripController.updateTrip);
 router.delete("/trip/:tripId", isAuth, tripController.deleteTrip);
+router.delete("/trips/:userId", isAuth, tripController.deleteAllTrips);
 
 //:page
 router.get("/trips/user", isAuth, tripController.getUserTrip);

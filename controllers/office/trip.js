@@ -300,6 +300,46 @@ exports.deleteTrip = (req, res, next) => {
     });
 };
 
+exports.deleteAllTrips = (req, res, next) => {
+  if (req.role !== "admin") {
+    const error = new Error("Please make sure you're an admin");
+    error.statusCode = 403;
+    throw error;
+  }
+  const userId = req.params.userId;
+
+  Trip.find({ user_id: userId })
+    .then((trips) => {
+      if (!trips) {
+        const error = new Error("Could not find trip");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      trips.map(async (item) => {
+        await Location.find({ trip_id: item._id }).then((locations) => {
+          locations.map(async (locItem) => {
+            await Location.findByIdAndRemove(locItem._id);
+          });
+        });
+
+        await Trip.findByIdAndRemove(item._id);
+
+        if (item?.odometer_image_path) {
+          clearImage(item.odometer_image_path);
+        }
+      });
+
+      res.status(201).json({ message: "delete all trips successfully" });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 const clearImage = (filePath) => {
   filePath = path.join(__dirname, "../..", filePath);
   fs.unlink(filePath, (err) => console.log(err));
