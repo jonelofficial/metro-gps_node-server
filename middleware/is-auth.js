@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+require("dotenv").config({ path: "SECRET_KEY" });
 
 module.exports = (req, res, next) => {
   // Authorizaton : Bearer "TOKEN"
