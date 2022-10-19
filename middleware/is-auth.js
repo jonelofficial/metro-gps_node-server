@@ -13,7 +13,11 @@ module.exports = (req, res, next) => {
   let decodedToken;
 
   try {
-    decodedToken = jwt.verify(token, process.env.SECRET_KEY);
+    decodedToken = jwt.verify(
+      token,
+      // process.env.SECRET_KEY
+      "metro1-gps2_secret3-key4_dev5-@jonelignacio"
+    );
   } catch (error) {
     error.statusCode = 500;
     throw error;
