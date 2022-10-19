@@ -78,9 +78,6 @@ app.use((error, req, res, next) => {
 
 // Database connection
 mongoose
-  .connect(
-    // process.env.DB_CONN
-    "mongodb+srv://metrogps_developer:2UpfmuaqxOfp3H8b@cluster0.qa1fhy8.mongodb.net/metro?retryWrites=true&w=majority"
-  )
+  .connect(process.env.DB_CONN)
   .then(() => app.listen(8080))
   .catch((err) => console.log(err));
