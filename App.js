@@ -4,7 +4,7 @@ const bodyParse = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const { v4: uuidv4 } = require("uuid");
-require("dotenv").config({ path: "DB_CONN" });
+require("dotenv").config({ path: "/.env" });
 
 const authRoutes = require("./routes/auth");
 const vehicleRoutes = require("./routes/vehicle");
