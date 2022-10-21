@@ -14,5 +14,7 @@ router.delete("/trips/:userId", isAuth, tripController.deleteAllTrips);
 router.get("/trips/user", isAuth, tripController.getUserTrip);
 //:searhDate&page
 router.get("/trips/search", isAuth, tripController.searchUserTrip);
+//:vehicleId
+router.get("/trips/vehicle", isAuth, tripController.vehicleTrip);
 
 module.exports = router;

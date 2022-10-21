@@ -5,6 +5,36 @@ const Trip = require("../../models/office/trip");
 const Location = require("../../models/office/location");
 const Diesel = require("../../models/office/diesel");
 
+exports.vehicleTrip = (req, res, next) => {
+  const vehicleId = req.query.vehicleId;
+
+  Trip.find({ vehicle_id: vehicleId })
+    .limit(1)
+    .sort({ trip_date: "asc" })
+    .then((trip) => {
+      if (!trip) {
+        const error = new Error("Could not found vehicle trip");
+        error.statusCode = 404;
+        res.status(404).json({
+          message: "Could not found vehicle trip",
+          data: result,
+        });
+        throw error;
+      }
+      const odometer = trip[0].odometer_done;
+      res.status(201).json({
+        message: "Success get vehicle trip",
+        data: { odometer: odometer },
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 exports.searchUserTrip = (req, res, next) => {
   const searchDate = req.query.searchDate;
   const currentPage = req.query.page;
