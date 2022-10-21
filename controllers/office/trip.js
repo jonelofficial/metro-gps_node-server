@@ -10,7 +10,7 @@ exports.vehicleTrip = (req, res, next) => {
 
   Trip.find({ vehicle_id: vehicleId })
     .limit(1)
-    .sort({ trip_date: "asc" })
+    .sort({ trip_date: "desc" })
     .then((trip) => {
       if (!trip) {
         const error = new Error("Could not found vehicle trip");
