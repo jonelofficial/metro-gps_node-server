@@ -1,9 +1,12 @@
+const { isObjectIdOrHexString } = require("mongoose");
 const GasStation = require("../models/gas_station");
+var ObjectId = require("mongoose").Types.ObjectId;
 
 exports.getStation = (req, res, next) => {
   const currentPage = req.query.page;
   const perPage = 25;
   let totalItems;
+  let newList;
 
   GasStation.find()
     .countDocuments()
@@ -14,11 +17,15 @@ exports.getStation = (req, res, next) => {
         .limit(perPage);
     })
     .then((result) => {
+      newList = [
+        ...result,
+        { _id: ObjectId("507f191e810c19729de860ea"), label: "Others" },
+      ];
       res.status(200).json({
         message: "Fetched gas stations successfully",
-        data: result,
+        data: newList,
         pagination: {
-          totalItems: totalItems,
+          totalItems: totalItems + 1,
           currentPage: parseInt(currentPage),
         },
       });

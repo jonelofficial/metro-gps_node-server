@@ -38,6 +38,7 @@ exports.createLocation = (req, res, next) => {
   const long = req.body.long;
   const status = req.body.status;
   const address = req.body.address;
+  const odometer = req.body.odometer || null;
 
   const location = new Location({
     trip_id: trip_id,
@@ -45,6 +46,7 @@ exports.createLocation = (req, res, next) => {
     long: long,
     status: status,
     address: address,
+    odometer: odometer,
   });
 
   location

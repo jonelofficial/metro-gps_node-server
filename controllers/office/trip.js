@@ -353,6 +353,12 @@ exports.deleteAllTrips = (req, res, next) => {
           });
         });
 
+        await Diesel.find({ trip_id: item._id }).then((diesels) => {
+          diesels.map(async (diesel) => {
+            await Diesel.findByIdAndRemove(diesel._id);
+          });
+        });
+
         await Trip.findByIdAndRemove(item._id);
 
         if (item?.odometer_image_path) {
