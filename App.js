@@ -77,6 +77,14 @@ app.use((error, req, res, next) => {
 });
 // Database connection
 mongoose
-  .connect(process.env.DB_CONN)
-  .then(() => app.listen(8080))
+  .connect(process.env.MONGODB_URI)
+  .then(() =>
+    app.listen(process.env.PORT || 3000, function () {
+      console.log(
+        "Express server listening on port %d in %s mode",
+        this.address().port,
+        app.settings.env
+      );
+    })
+  )
   .catch((err) => console.log(err));
