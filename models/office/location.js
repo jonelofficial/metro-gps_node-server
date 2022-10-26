@@ -11,6 +11,7 @@ const locationSchema = new Schema({
   date: {
     type: Date,
     default: Date.now,
+    // default: new Date().toString(),
   },
   lat: {
     type: Number,
@@ -26,6 +27,9 @@ const locationSchema = new Schema({
   },
   address: {
     type: JSON,
+  },
+  odometer: {
+    type: Number,
   },
 });
 

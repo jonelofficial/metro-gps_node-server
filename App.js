@@ -75,7 +75,6 @@ app.use((error, req, res, next) => {
   const data = error.data;
   res.status(status).json({ error: message, data: data });
 });
-
 // Database connection
 mongoose
   .connect(process.env.DB_CONN)
