@@ -36,8 +36,11 @@ const tripSchema = new Schema(
     odometer_image_path: {
       type: String,
     },
-    companion: {
+    others: {
       type: String,
+    },
+    companion: {
+      type: JSON,
     },
     points: {
       type: JSON,

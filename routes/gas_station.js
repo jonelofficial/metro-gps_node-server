@@ -5,7 +5,7 @@ const router = express.Router();
 const gasStationController = require("../controllers/gas_station");
 const isAuth = require("../middleware/is-auth");
 
-router.get("/stations", isAuth, gasStationController.getStation);
+router.get("/stations", gasStationController.getStation);
 router.post("/station", isAuth, gasStationController.createStation);
 router.put("/station/:stationId", isAuth, gasStationController.updateStation);
 router.delete(

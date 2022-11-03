@@ -65,6 +65,7 @@ exports.createVehicle = (req, res, next) => {
   const brand = req.body.brand;
   const fuel_type = req.body.fuel_type;
   const km_per_liter = req.body.km_per_liter;
+  const department = req.body.department || null;
   const profile = newImageURL;
 
   const vehicle = new Vehicle({
@@ -74,6 +75,7 @@ exports.createVehicle = (req, res, next) => {
     brand: brand,
     fuel_type: fuel_type,
     km_per_liter: km_per_liter,
+    department: department,
     profile: profile,
   });
 
@@ -113,6 +115,7 @@ exports.updateVehicle = (req, res, next) => {
   const brand = req.body.brand || null;
   const fuel_type = req.body.fuel_type || null;
   const km_per_liter = req.body.km_per_liter || null;
+  const department = req.body.department || null;
   const profile = newImageURL || null;
 
   Vehicle.findById(vehicleId)
@@ -133,6 +136,7 @@ exports.updateVehicle = (req, res, next) => {
       vehicle.brand = brand || vehicle.brand;
       vehicle.fuel_type = fuel_type || vehicle.fuel_type;
       vehicle.km_per_liter = km_per_liter || vehicle.km_per_liter;
+      vehicle.department = department || vehicle.department;
       vehicle.profile = profile || vehicle.profile;
 
       return vehicle.save();

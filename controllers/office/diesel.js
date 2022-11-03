@@ -32,8 +32,8 @@ exports.getDiesel = (req, res, next) => {
 };
 
 exports.createDiesel = (req, res, next) => {
-  // const gas_station_id = req.body.gas_station_id;
-  // const gas_station_name = req.body?.gas_station_name || null;
+  const gas_station_id = req.body.gas_station_id;
+  const gas_station_name = req.body?.gas_station_name || null;
   const trip_id = req.body.trip_id;
   const odometer = req.body.odometer;
   const liter = req.body.liter;
@@ -42,8 +42,8 @@ exports.createDiesel = (req, res, next) => {
   const amount = req.body.amount;
 
   const diesel = new Diesel({
-    // gas_station_id: gas_station_id,
-    // gas_station_name: gas_station_name,
+    gas_station_id: gas_station_id,
+    gas_station_name: gas_station_name,
     trip_id: trip_id,
     odometer: odometer,
     liter: liter,
