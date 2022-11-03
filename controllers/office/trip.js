@@ -181,7 +181,7 @@ exports.createTrip = async (req, res, next) => {
   const odometer_done = req.body.odometer_done || null;
   const odometer_image_path = newImageUrl || null;
   const companion = JSON.parse(req.body.companion) || null;
-  const others = JSON.parse(req.body.others) || null;
+  const others = req.body.others || null;
   const points = req.body.points || null;
 
   const trip = new Trip({
@@ -223,8 +223,8 @@ exports.updateTrip = (req, res, next) => {
   const odometer = req.body.odometer || null;
   const odometer_done = req.body.odometer_done || null;
   const odometer_image_path = newImageURL || null;
-  const companion = JSON.parse(req.body.companion) || null;
-  const others = JSON.parse(req.body.others) || null;
+  const companion = req.body.companion || null;
+  const others = req.body.others || null;
   const points = req.body.points || null;
 
   Trip.findById(tripId)
