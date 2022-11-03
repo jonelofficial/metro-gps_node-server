@@ -21,10 +21,15 @@ exports.vehicleTrip = (req, res, next) => {
         });
         throw error;
       }
-      const odometer = trip[0].odometer_done;
+      const odometer = trip[0].odometer;
+      const odometer_done = trip[0].odometer_done;
       res.status(201).json({
         message: "Success get vehicle trip",
-        data: { odometer: odometer },
+        data: {
+          odometer: odometer,
+          odometer_done: odometer_done,
+          points: trip[0].points,
+        },
       });
     })
     .catch((err) => {
@@ -175,7 +180,8 @@ exports.createTrip = async (req, res, next) => {
   const odometer = req.body.odometer;
   const odometer_done = req.body.odometer_done || null;
   const odometer_image_path = newImageUrl || null;
-  const companion = req.body.companion;
+  const companion = JSON.parse(req.body.companion) || null;
+  const others = JSON.parse(req.body.others) || null;
   const points = req.body.points || null;
 
   const trip = new Trip({
@@ -185,6 +191,7 @@ exports.createTrip = async (req, res, next) => {
     odometer_done: odometer_done,
     odometer_image_path: odometer_image_path,
     companion: companion,
+    others: others,
     points: points,
   });
 
@@ -216,7 +223,8 @@ exports.updateTrip = (req, res, next) => {
   const odometer = req.body.odometer || null;
   const odometer_done = req.body.odometer_done || null;
   const odometer_image_path = newImageURL || null;
-  const companion = req.body.companion || null;
+  const companion = JSON.parse(req.body.companion) || null;
+  const others = JSON.parse(req.body.others) || null;
   const points = req.body.points || null;
 
   Trip.findById(tripId)
@@ -239,6 +247,7 @@ exports.updateTrip = (req, res, next) => {
       trip.odometer_image_path =
         odometer_image_path || trip.odometer_image_path;
       trip.companion = companion || trip.companion;
+      trip.others = others || trip.others;
       trip.points = points || trip.points;
 
       return Trip.findOneAndUpdate(
@@ -250,6 +259,7 @@ exports.updateTrip = (req, res, next) => {
           odometer_done: odometer_done || trip.odometer_done,
           odometer_image_path: odometer_image_path || trip.odometer_image_path,
           companion: companion || trip.companion,
+          others: others || trip.others,
           points: points || trip.points,
         }
       )
