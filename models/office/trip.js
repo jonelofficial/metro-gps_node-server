@@ -37,7 +37,10 @@ const tripSchema = new Schema(
       type: String,
     },
     companion: {
-      type: String,
+      type: JSON,
+    },
+    others: {
+      type: JSON,
     },
     points: {
       type: JSON,
