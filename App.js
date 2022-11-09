@@ -14,6 +14,8 @@ const officeTripRoutes = require("./routes/office/trip");
 const officeDieselStationRoutes = require("./routes/office/diesel");
 const officeLocationStationRoutes = require("./routes/office/location");
 
+const officeReportsRoutes = require("./routes/office/reports");
+
 const app = express();
 
 // Images Upload
@@ -67,6 +69,9 @@ app.use("/office", officeDieselStationRoutes);
 // Hauling Routes
 // Delivery Routes
 // Feeds Delivery Routes
+
+// Portal Reports
+app.use("/reports-office", officeReportsRoutes);
 
 // Error Cb
 app.use((error, req, res, next) => {
