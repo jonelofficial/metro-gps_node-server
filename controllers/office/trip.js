@@ -182,7 +182,7 @@ exports.createTrip = async (req, res, next) => {
   const odometer_image_path = newImageUrl || null;
   const companion = JSON.parse(req.body.companion) || null;
   const others = req.body.others || null;
-  const points = req.body.points || null;
+  const points = JSON.parse(req.body.points) || null;
 
   const trip = new Trip({
     user_id: user_id,
