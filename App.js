@@ -40,7 +40,10 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-app.use(bodyParse.json());
+// app.use(bodyParse.json());
+// request file size
+app.use(bodyParse.json({ limit: "100mb" }));
+app.use(bodyParse.urlencoded({ limit: "100mb", extended: true }));
 
 app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
 app.use("/images", express.static(path.join(__dirname, "images")));
