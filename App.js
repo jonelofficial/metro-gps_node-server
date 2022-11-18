@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const path = require("path");
 const bodyParse = require("body-parser");
 const mongoose = require("mongoose");
@@ -40,7 +41,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// app.use(bodyParse.json());
 // request file size
 app.use(bodyParse.json({ limit: "100mb" }));
 app.use(bodyParse.urlencoded({ limit: "100mb", extended: true }));
@@ -49,13 +49,20 @@ app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
 app.use("/images", express.static(path.join(__dirname, "images")));
 
 // END IMAGE UPLOAD
-
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Origin", "GET, POST, PUT, PATCH, DELETE");
-  res.setHeader("Access-Control-Allow-Origin", "Content-Type , Authorization");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "*");
+//   res.setHeader("Access-Control-Allow-Origin", "GET, POST, PUT, PATCH, DELETE");
+//   res.setHeader("Access-Control-Allow-Origin", "Content-Type , Authorization");
+//   next();
+// });
+app.use(
+  cors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  })
+);
 
 // Authentication
 app.use("/auth", authRoutes);
@@ -85,9 +92,9 @@ app.use((error, req, res, next) => {
 });
 // Database connection
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.DB_CONN)
   .then(() =>
-    app.listen(process.env.PORT || 3000, function () {
+    app.listen(process.env.PORT || 8080, function () {
       console.log(
         "Express server listening on port %d in %s mode",
         this.address().port,

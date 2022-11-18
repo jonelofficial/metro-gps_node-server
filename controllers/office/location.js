@@ -39,6 +39,7 @@ exports.createLocation = (req, res, next) => {
   const status = req.body.status;
   const address = req.body.address;
   const odometer = req.body.odometer || null;
+  const date = req.body.date || Date.now;
 
   const location = new Location({
     trip_id: trip_id,
@@ -47,6 +48,7 @@ exports.createLocation = (req, res, next) => {
     status: status,
     address: address,
     odometer: odometer,
+    date: date,
   });
 
   location
