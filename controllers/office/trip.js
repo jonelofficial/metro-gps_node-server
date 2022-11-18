@@ -183,6 +183,7 @@ exports.createTrip = async (req, res, next) => {
   const companion = JSON.parse(req.body.companion) || null;
   const others = req.body.others || null;
   const points = JSON.parse(req.body.points) || null;
+  const trip_date = req.body.trip_date || Date.now;
 
   const trip = new Trip({
     user_id: user_id,
@@ -193,6 +194,7 @@ exports.createTrip = async (req, res, next) => {
     companion: companion,
     others: others,
     points: points,
+    trip_date: trip_date,
   });
 
   trip

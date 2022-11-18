@@ -6,7 +6,8 @@ const tripSchema = new Schema(
   {
     trip_date: {
       type: Date,
-      default: Date.now,
+      required: true,
+      // default: Date.now,
       // default: new Date().toString(),
     },
     user_id: {

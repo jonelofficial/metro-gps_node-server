@@ -10,7 +10,8 @@ const locationSchema = new Schema({
   },
   date: {
     type: Date,
-    default: Date.now,
+    required: true,
+    // default: Date.now,
     // default: new Date().toString(),
   },
   lat: {
