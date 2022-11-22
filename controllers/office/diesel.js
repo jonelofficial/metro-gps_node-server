@@ -31,6 +31,53 @@ exports.getDiesel = (req, res, next) => {
     });
 };
 
+exports.createBulkDiesel = async (req, res, next) => {
+  const diesels = req.body;
+  const tripId = req.query.id;
+  let dieselObj = [];
+
+  await diesels.map((item) => {
+    const diesel = new Diesel({
+      gas_station_id: item.gas_station_id,
+      gas_station_name: item.gas_station_name,
+      trip_id: tripId,
+      odometer: item.odometer,
+      liter: item.liter,
+      lat: item.lat,
+      long: item.long,
+      amount: item.amount,
+    });
+    diesel
+      .save()
+      .then((result) => {
+        dieselObj.push(result.id);
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  });
+
+  Trip.findById({ _id: tripId })
+    .then((trip) => {
+      trip.diesels = [...trip.diesels, ...dieselObj];
+      return trip.save();
+    })
+    .then(() => {
+      res.status(201).json({
+        message: "Success create bulk diesel",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 exports.createDiesel = (req, res, next) => {
   const gas_station_id = req.body.gas_station_id;
   const gas_station_name = req.body?.gas_station_name || null;

@@ -32,6 +32,53 @@ exports.getLocations = (req, res, next) => {
     });
 };
 
+exports.createBulkLocation = async (req, res, next) => {
+  const locations = req.body;
+  const tripId = req.query.id;
+  let locObj = [];
+
+  await locations.map((item) => {
+    const location = new Location({
+      trip_id: tripId,
+      lat: item.lat,
+      long: item.long,
+      status: item.status,
+      address: item.address,
+      odometer: item.odometer || null,
+      date: item.date || Date.now,
+    });
+
+    location
+      .save()
+      .then((result) => {
+        locObj.push(result.id);
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  });
+
+  Trip.findById({ _id: tripId })
+    .then((trip) => {
+      trip.locations = [...trip.locations, ...locObj];
+      return trip.save();
+    })
+    .then(() => {
+      res.status(201).json({
+        message: "Success create bulk location",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 exports.createLocation = (req, res, next) => {
   const trip_id = req.body.trip_id;
   const lat = req.body.lat;
