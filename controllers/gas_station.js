@@ -3,8 +3,6 @@ const GasStation = require("../models/gas_station");
 var ObjectId = require("mongoose").Types.ObjectId;
 
 exports.getStation = (req, res, next) => {
-  const currentPage = req.query.page;
-  const perPage = 25;
   let totalItems;
   let newList;
 
@@ -12,9 +10,7 @@ exports.getStation = (req, res, next) => {
     .countDocuments()
     .then((count) => {
       totalItems = count;
-      return GasStation.find()
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
+      return GasStation.find();
     })
     .then((result) => {
       newList = [
@@ -26,7 +22,6 @@ exports.getStation = (req, res, next) => {
         data: newList,
         pagination: {
           totalItems: totalItems + 1,
-          currentPage: parseInt(currentPage),
         },
       });
     })

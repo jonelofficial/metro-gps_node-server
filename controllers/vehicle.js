@@ -23,17 +23,13 @@ exports.getUserVehicle = (req, res, next) => {
 };
 
 exports.getVehicles = (req, res, next) => {
-  const currentPage = req.query.page;
-  const perPage = 25;
   let totalItems;
 
   Vehicle.find()
     .countDocuments()
     .then((count) => {
       totalItems = count;
-      return Vehicle.find()
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
+      return Vehicle.find();
     })
     .then((result) => {
       res.status(200).json({
@@ -41,7 +37,6 @@ exports.getVehicles = (req, res, next) => {
         data: result,
         pagination: {
           totalItems: totalItems,
-          currentPage: parseInt(currentPage),
         },
       });
     })
