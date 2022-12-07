@@ -34,6 +34,7 @@ exports.getDiesel = (req, res, next) => {
 exports.createBulkDiesel = async (req, res, next) => {
   const diesels = req.body;
   const tripId = req.query.id;
+  let totalDiesels = 0;
   let dieselObj = [];
 
   await diesels.map((item) => {
@@ -50,6 +51,7 @@ exports.createBulkDiesel = async (req, res, next) => {
     diesel
       .save()
       .then((result) => {
+        totalDiesels++;
         dieselObj.push(result.id);
       })
       .catch((err) => {
@@ -68,6 +70,7 @@ exports.createBulkDiesel = async (req, res, next) => {
     .then(() => {
       res.status(201).json({
         message: "Success create bulk diesel",
+        tally: totalDiesels === diesels.length ? true : false,
       });
     })
     .catch((err) => {

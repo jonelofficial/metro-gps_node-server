@@ -34,6 +34,14 @@ const userSchema = new Schema(
     profile: {
       type: String,
     },
+    license_exp: {
+      type: Date,
+      required: true,
+    },
+    status: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
