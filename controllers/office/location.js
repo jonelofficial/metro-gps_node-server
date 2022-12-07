@@ -35,6 +35,7 @@ exports.getLocations = (req, res, next) => {
 exports.createBulkLocation = async (req, res, next) => {
   const locations = req.body;
   const tripId = req.query.id;
+  let totalLocations = 0;
   let locObj = [];
 
   await locations.map((item) => {
@@ -51,9 +52,11 @@ exports.createBulkLocation = async (req, res, next) => {
     location
       .save()
       .then((result) => {
+        totalLocations++;
         locObj.push(result.id);
       })
       .catch((err) => {
+        console.log(err);
         if (!err.statusCode) {
           err.statusCode = 500;
         }
@@ -67,8 +70,10 @@ exports.createBulkLocation = async (req, res, next) => {
       return trip.save();
     })
     .then(() => {
+      // console.log(`${totalLocations}  |  ${locations.length}`);
       res.status(201).json({
         message: "Success create bulk location",
+        tally: totalLocations === locations.length ? true : false,
       });
     })
     .catch((err) => {

@@ -21,14 +21,13 @@ exports.vehicleTrip = (req, res, next) => {
         });
         throw error;
       }
-      const odometer = trip[0].odometer;
-      const odometer_done = trip[0].odometer_done;
+
       res.status(201).json({
         message: "Success get vehicle trip",
         data: {
-          odometer: odometer,
-          odometer_done: odometer_done,
-          points: trip[0].points,
+          odometer: trip[0]?.odometer,
+          odometer_done: trip[0]?.odometer_done,
+          points: trip[0]?.points,
         },
       });
     })
