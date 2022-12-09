@@ -38,42 +38,54 @@ exports.createBulkLocation = async (req, res, next) => {
   let totalLocations = 0;
   let locObj = [];
 
-  await locations.map((item) => {
-    const location = new Location({
-      trip_id: tripId,
-      lat: item.lat,
-      long: item.long,
-      status: item.status,
-      address: item.address,
-      odometer: item.odometer || null,
-      date: item.date || Date.now,
-    });
-
-    location
-      .save()
-      .then((result) => {
-        totalLocations++;
-        locObj.push(result.id);
-      })
-      .catch((err) => {
-        console.log(err);
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
+  let counter = 0;
+  while (counter < 100) {
+    if (totalLocations == locations.length) {
+      break;
+    } else {
+      totalLocations = 0;
+      locObj = [];
+      counter++;
+    }
+    for (let i = 0; i < locations.length; i++) {
+      const location = new Location({
+        trip_id: tripId,
+        lat: locations[i].lat,
+        long: locations[i].long,
+        status: locations[i].status,
+        address: locations[i].address,
+        odometer: locations[i].odometer || null,
+        date: locations[i].date || Date.now,
       });
-  });
+      await location
+        .save()
+        .then((result) => {
+          totalLocations++;
+          locObj.push(result.id);
+        })
+        .catch((err) => {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        });
+    }
+  }
 
-  Trip.findById({ _id: tripId })
+  await Trip.findById({ _id: tripId })
     .then((trip) => {
       trip.locations = [...trip.locations, ...locObj];
       return trip.save();
     })
-    .then(() => {
-      // console.log(`${totalLocations}  |  ${locations.length}`);
+    .then((result) => {
+      // console.log(
+      //   `Loc ${totalLocations} | Length ${locations.length} | Res ${result.locations.length}`
+      // );
       res.status(201).json({
         message: "Success create bulk location",
-        tally: totalLocations === locations.length ? true : false,
+        tally:
+          totalLocations == locations.length &&
+          totalLocations == result.locations.length,
       });
     })
     .catch((err) => {
