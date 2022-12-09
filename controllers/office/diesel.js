@@ -37,40 +37,54 @@ exports.createBulkDiesel = async (req, res, next) => {
   let totalDiesels = 0;
   let dieselObj = [];
 
-  await diesels.map((item) => {
-    const diesel = new Diesel({
-      gas_station_id: item.gas_station_id,
-      gas_station_name: item.gas_station_name,
-      trip_id: tripId,
-      odometer: item.odometer,
-      liter: item.liter,
-      lat: item.lat,
-      long: item.long,
-      amount: item.amount,
-    });
-    diesel
-      .save()
-      .then((result) => {
-        totalDiesels++;
-        dieselObj.push(result.id);
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
+  let counter = 0;
+  while (counter < 100) {
+    if (totalDiesels === diesels.length) {
+      break;
+    } else {
+      totalDiesels = 0;
+      dieselObj = [];
+      counter++;
+    }
+
+    for (let i = 0; i < diesels.length; i++) {
+      const diesel = new Diesel({
+        gas_station_id: diesels[i].gas_station_id,
+        gas_station_name: diesels[i].gas_station_name,
+        trip_id: tripId,
+        odometer: diesels[i].odometer,
+        liter: diesels[i].liter,
+        lat: diesels[i].lat,
+        long: diesels[i].long,
+        amount: diesels[i].amount,
       });
-  });
+
+      await diesel
+        .save()
+        .then((result) => {
+          totalDiesels++;
+          dieselObj.push(result.id);
+        })
+        .catch((err) => {
+          if (!err.statusCode) {
+            err.statusCode = 500;
+          }
+          next(err);
+        });
+    }
+  }
 
   Trip.findById({ _id: tripId })
     .then((trip) => {
       trip.diesels = [...trip.diesels, ...dieselObj];
       return trip.save();
     })
-    .then(() => {
+    .then((result) => {
       res.status(201).json({
         message: "Success create bulk diesel",
-        tally: totalDiesels === diesels.length ? true : false,
+        tally:
+          totalDiesels === diesels.length &&
+          totalDiesels === result.diesels.length,
       });
     })
     .catch((err) => {
