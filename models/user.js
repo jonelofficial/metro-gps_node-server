@@ -36,11 +36,10 @@ const userSchema = new Schema(
     },
     license_exp: {
       type: Date,
-      required: true,
     },
     status: {
       type: String,
-      required: true,
+      // required: true,
     },
   },
   { timestamps: true }

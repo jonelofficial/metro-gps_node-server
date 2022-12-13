@@ -138,8 +138,9 @@ exports.getUserTrip = (req, res, next) => {
 
 exports.getTrips = (req, res, next) => {
   // office/trips?page=
-  const currentPage = req.query.page;
-  const perPage = 25;
+  const currentPage = req.query.page || 1;
+  const perPage = req.query.limit || 25;
+
   let totalItems;
 
   Trip.find()
