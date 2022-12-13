@@ -22,6 +22,7 @@ router.post(
       .isLength({ min: 5 })
       .withMessage("Password minimum length is 5"),
   ],
+  isAuth,
   authController.createUser
 );
 

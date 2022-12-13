@@ -134,18 +134,21 @@ exports.getUsers = (req, res, next) => {
     res.status(403).json({ message: "Please make sure you're an admin" });
     throw error;
   }
-  // auth/users?page=
-  const currentPage = req.query.page;
-  const perPage = 25;
+  const currentPage = req.query.page || 1;
+  const perPage = req.query.limit || 10;
+  const searchItem = req.query.search || "";
+  const searchBy = req.query.searchBy || "employee_id";
+
   let totalItems;
 
-  User.find()
+  User.find({ [searchBy]: { $regex: `.*${searchItem}.*` } })
     .countDocuments()
     .then((count) => {
       totalItems = count;
-      return User.find()
+      return User.find({ [searchBy]: { $regex: `.*${searchItem}.*` } })
         .skip((currentPage - 1) * perPage)
-        .limit(perPage);
+        .limit(perPage)
+        .sort({ createdAt: "desc" });
     })
     .then((result) => {
       res.status(200).json({
@@ -153,6 +156,7 @@ exports.getUsers = (req, res, next) => {
         data: result,
         pagination: {
           totalItems: totalItems,
+          limit: parseInt(perPage),
           currentPage: parseInt(currentPage),
         },
       });
@@ -186,6 +190,7 @@ exports.createUser = (req, res, next) => {
   const password = req.body.password;
   const trip_template = req.body.trip_template;
   const role = req.body.role;
+  const status = req.body.status;
   const profile = newImageURl;
 
   bcrypt
@@ -199,6 +204,7 @@ exports.createUser = (req, res, next) => {
         password: hashedPw,
         trip_template: trip_template,
         role: role,
+        status: status,
         profile: profile,
       });
       return user.save();
