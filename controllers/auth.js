@@ -37,7 +37,10 @@ exports.updateUser = (req, res, next) => {
   const password = req.body.password || null;
   const trip_template = req.body.trip_template || null;
   const role = req.body.role || null;
+  const license_exp = req.body.license_exp || null;
+  const status = req.body.status || null;
   const profile = newImageURl || null;
+  const department = JSON.parse(req.body.department) || null;
   // image validation here
 
   User.findById(userId)
@@ -49,22 +52,27 @@ exports.updateUser = (req, res, next) => {
         throw error;
       }
 
-      if (profile !== user.profile && user.profile) {
+      if (profile !== user.profile && user.profile && profile != undefined) {
         clearImage(user.profile);
       }
 
       req.body.password &&
         bcrypt
           .hash(password, 12)
-          .then((hashedPw) => {
+          .then(async (hashedPw) => {
+            // const isSame = await bcrypt.compare(password, user.password);
             user.employee_id = employee_id || user.employee_id;
             user.first_name = first_name || user.first_name;
             user.last_name = last_name || user.last_name;
             user.username = username || user.username;
-            user.password = hashedPw || user.password;
+            user.password = password == "null" ? user.password : hashedPw;
             user.trip_template = trip_template || user.trip_template;
+            user.license_exp =
+              license_exp === user.license_exp ? user.license_exp : license_exp;
+            user.status = status || user.status;
             user.role = role || user.role;
             user.profile = profile || user.profile;
+            user.department = department || user.department;
             return user.save();
           })
           .then((result) => {
@@ -76,17 +84,6 @@ exports.updateUser = (req, res, next) => {
             }
             next(err);
           });
-      user.employee_id = employee_id || user.employee_id;
-      user.first_name = first_name || user.first_name;
-      user.last_name = last_name || user.last_name;
-      user.username = username || user.username;
-      user.trip_template = trip_template || user.trip_template;
-      user.role = role || user.role;
-      user.profile = profile || user.profile;
-      return user.save();
-    })
-    .then((result) => {
-      res.status(200).json({ message: "User udpated", user: result });
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -134,6 +131,7 @@ exports.getUsers = (req, res, next) => {
     res.status(403).json({ message: "Please make sure you're an admin" });
     throw error;
   }
+
   const currentPage = req.query.page || 1;
   const perPage = req.query.limit || 10;
   const searchItem = req.query.search || "";
@@ -141,11 +139,13 @@ exports.getUsers = (req, res, next) => {
 
   let totalItems;
 
-  User.find({ [searchBy]: { $regex: `.*${searchItem}.*` } })
+  User.find({ [searchBy]: { $regex: `.*${searchItem}.*i`, $options: "i" } })
     .countDocuments()
     .then((count) => {
       totalItems = count;
-      return User.find({ [searchBy]: { $regex: `.*${searchItem}.*` } })
+      return User.find({
+        [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
+      })
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .sort({ createdAt: "desc" });
@@ -191,7 +191,9 @@ exports.createUser = (req, res, next) => {
   const trip_template = req.body.trip_template;
   const role = req.body.role;
   const status = req.body.status;
+  const license_exp = req.body.license_exp;
   const profile = newImageURl;
+  const department = JSON.parse(req.body.department);
 
   bcrypt
     .hash(password, 12)
@@ -205,7 +207,9 @@ exports.createUser = (req, res, next) => {
         trip_template: trip_template,
         role: role,
         status: status,
+        license_exp: license_exp,
         profile: profile,
+        department: department,
       });
       return user.save();
     })
