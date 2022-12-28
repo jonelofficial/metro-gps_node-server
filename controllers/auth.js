@@ -3,9 +3,88 @@ const bcrypt = require("bcryptjs");
 const fs = require("fs");
 const path = require("path");
 const { validationResult } = require("express-validator");
+const User = require("../models/user");
 require("dotenv").config();
 
-const User = require("../models/user");
+const department = require("../utility/department");
+
+exports.deleteAllUser = async (req, res, next) => {
+  if (req.role !== "admin") {
+    const error = new Error("Please make sure you're an admin");
+    error.statusCode = 403;
+    res.status(403).json({ message: error });
+    throw error;
+  }
+
+  await User.deleteMany({}).then(() => {
+    res.status(201).json({
+      message: "Success delete all users",
+    });
+  });
+};
+
+exports.importUser = async (req, res, next) => {
+  if (req.role !== "admin") {
+    const error = new Error("Please make sure you're an admin");
+    error.statusCode = 403;
+    res.status(403).json({ message: "Please make sure you're an admin" });
+    throw error;
+  }
+
+  const users = req.body;
+
+  const response = () => {
+    res.status(200).json({
+      message: "Success import user",
+      totalItem: users.length,
+    });
+  };
+
+  await users.forEach(async (user, index) => {
+    let newDepartment = {};
+
+    department.map((item) => {
+      if (item.label === user.department) {
+        newDepartment = item;
+      }
+    });
+
+    const newDate = new Date(1900, 0, user.license_exp - 1).toDateString();
+
+    await User.findOne({ username: user.username })
+      .then((isUser) => {
+        if (!isUser) {
+          bcrypt.hash(user.password, 12).then((hashedPw) => {
+            const newUser = new User({
+              employee_id: user.employee_id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              username: user.username,
+              password: hashedPw,
+              trip_template: user.trip_template,
+              role: user.role,
+              status: user.status,
+              license_exp: newDate,
+              profile: user.profile,
+              department: newDepartment,
+            });
+            newUser.save();
+          });
+        }
+      })
+      .then(() => {
+        if (index === users.length - 1) {
+          response();
+        }
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  });
+};
 
 exports.updateUser = (req, res, next) => {
   if (req.role !== "admin") {
@@ -60,7 +139,6 @@ exports.updateUser = (req, res, next) => {
         bcrypt
           .hash(password, 12)
           .then(async (hashedPw) => {
-            // const isSame = await bcrypt.compare(password, user.password);
             user.employee_id = employee_id || user.employee_id;
             user.first_name = first_name || user.first_name;
             user.last_name = last_name || user.last_name;
@@ -118,7 +196,7 @@ exports.deleteUser = (req, res, next) => {
     })
     .catch((err) => {
       if (!err.statusCode) {
-        err.statusCOde = 500;
+        err.statusCode = 500;
       }
       next(err);
     });

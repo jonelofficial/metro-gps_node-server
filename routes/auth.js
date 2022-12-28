@@ -30,5 +30,7 @@ router.post("/login", authController.login);
 router.get("/users", isAuth, authController.getUsers);
 router.delete("/delete-user/:userId", isAuth, authController.deleteUser);
 router.put("/update-user/:userId", isAuth, authController.updateUser);
+router.post("/import-user", isAuth, authController.importUser);
+router.delete("/delete-all-users", isAuth, authController.deleteAllUser);
 
 module.exports = router;
