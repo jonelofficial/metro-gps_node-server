@@ -8,7 +8,7 @@ require("dotenv").config();
 
 const department = require("../utility/department");
 
-exports.deleteAllUser = async (req, res, next) => {
+exports.deleteAllUsers = async (req, res, next) => {
   if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
@@ -29,7 +29,7 @@ exports.deleteAllUser = async (req, res, next) => {
     });
 };
 
-exports.importUser = async (req, res, next) => {
+exports.importUsers = async (req, res, next) => {
   if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
@@ -85,7 +85,7 @@ exports.importUser = async (req, res, next) => {
             next(err);
           });
       })
-    : res.status(201).json({ message: "no item found" });
+    : res.status(404).json({ message: "no item found" });
 };
 
 exports.updateUser = (req, res, next) => {

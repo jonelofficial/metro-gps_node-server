@@ -2,6 +2,64 @@
 const GasStation = require("../models/gas_station");
 var ObjectId = require("mongoose").Types.ObjectId;
 
+exports.deleteAllStations = async (req, res, next) => {
+  if (req.role !== "admin") {
+    const error = new Error("Please make sure you're an admin");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  await GasStation.deleteMany({})
+    .then(() => {
+      res.status(200).json({
+        message: "Success delete all gas stations",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.importGasStations = async (req, res, next) => {
+  if (req.role !== "admin") {
+    const error = new Error("Please make sure you're an admin");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const stations = req.body;
+
+  stations.length > 0
+    ? await stations.forEach(async (station, index) => {
+        await GasStation.findOne({ label: station.label })
+          .then((isStation) => {
+            if (!isStation) {
+              GasStation.create({
+                label: station.label,
+              });
+            }
+          })
+          .then(() => {
+            if (index === stations.length - 1) {
+              res.status(200).json({
+                message: "Success import gas stations",
+                totalItem: stations.length,
+              });
+            }
+          })
+          .catch((err) => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
+          });
+      })
+    : res.status(404).json({ message: "no item found" });
+};
+
 exports.getStation = (req, res, next) => {
   let totalItems;
   let newList;

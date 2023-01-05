@@ -73,7 +73,7 @@ exports.importVehicles = async (req, res, next) => {
             next(err);
           });
       })
-    : res.status(201).json({ message: "no item found" });
+    : res.status(404).json({ message: "no item found" });
 };
 
 exports.getUserVehicle = (req, res, next) => {

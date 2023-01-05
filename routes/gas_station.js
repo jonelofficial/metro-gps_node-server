@@ -14,4 +14,11 @@ router.delete(
   gasStationController.deleteStation
 );
 
+router.post("/import-stations", isAuth, gasStationController.importGasStations);
+router.delete(
+  "/delete-all-stations",
+  isAuth,
+  gasStationController.deleteAllStations
+);
+
 module.exports = router;
