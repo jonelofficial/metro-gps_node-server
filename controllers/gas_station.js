@@ -1,4 +1,4 @@
-const { isObjectIdOrHexString } = require("mongoose");
+// const { isObjectIdOrHexString } = require("mongoose");
 const GasStation = require("../models/gas_station");
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -6,11 +6,23 @@ exports.getStation = (req, res, next) => {
   let totalItems;
   let newList;
 
-  GasStation.find()
+  const currentPage = req.query.page || 1;
+  const perPage = req.query.limit || 0;
+  const searchItem = req.query.search || "";
+  const searchBy = req.query.searchBy || "label";
+
+  GasStation.find({
+    [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
+  })
     .countDocuments()
     .then((count) => {
       totalItems = count;
-      return GasStation.find();
+      return GasStation.find({
+        [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
+      })
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage)
+        .sort({ createdAt: "desc" });
     })
     .then((result) => {
       newList = [
@@ -22,6 +34,8 @@ exports.getStation = (req, res, next) => {
         data: newList,
         pagination: {
           totalItems: totalItems + 1,
+          limit: parseInt(perPage),
+          currentPage: parseInt(currentPage),
         },
       });
     })

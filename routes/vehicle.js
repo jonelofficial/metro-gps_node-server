@@ -12,4 +12,11 @@ router.delete("/car/:vehicleId", isAuth, vehicleController.deleteVehicle);
 //:plateNo
 router.get("/car/user", isAuth, vehicleController.getUserVehicle);
 
+router.post("/import-vehicles", isAuth, vehicleController.importVehicles);
+router.delete(
+  "/delete-all-vehicles",
+  isAuth,
+  vehicleController.deleteAllVehicles
+);
+
 module.exports = router;

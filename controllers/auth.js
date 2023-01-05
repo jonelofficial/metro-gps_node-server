@@ -12,85 +12,86 @@ exports.deleteAllUser = async (req, res, next) => {
   if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
-    res.status(403).json({ message: error });
     throw error;
   }
 
-  await User.deleteMany({}).then(() => {
-    res.status(201).json({
-      message: "Success delete all users",
+  await User.deleteMany({})
+    .then(() => {
+      res.status(201).json({
+        message: "Success delete all users",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
     });
-  });
 };
 
 exports.importUser = async (req, res, next) => {
   if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
-    res.status(403).json({ message: "Please make sure you're an admin" });
     throw error;
   }
 
   const users = req.body;
 
-  const response = () => {
-    res.status(200).json({
-      message: "Success import user",
-      totalItem: users.length,
-    });
-  };
+  users.length > 0
+    ? await users.forEach(async (user, index) => {
+        let newDepartment = {};
 
-  await users.forEach(async (user, index) => {
-    let newDepartment = {};
+        department.map((item) => {
+          if (item.label === user.department) {
+            newDepartment = item;
+          }
+        });
 
-    department.map((item) => {
-      if (item.label === user.department) {
-        newDepartment = item;
-      }
-    });
+        const newDate = new Date(1900, 0, user.license_exp - 1).toDateString();
 
-    const newDate = new Date(1900, 0, user.license_exp - 1).toDateString();
-
-    await User.findOne({ username: user.username })
-      .then((isUser) => {
-        if (!isUser) {
-          bcrypt.hash(user.password, 12).then((hashedPw) => {
-            const newUser = new User({
-              employee_id: user.employee_id,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              username: user.username,
-              password: hashedPw,
-              trip_template: user.trip_template,
-              role: user.role,
-              status: user.status,
-              license_exp: newDate,
-              profile: user.profile,
-              department: newDepartment,
-            });
-            newUser.save();
+        await User.findOne({ username: user.username })
+          .then((isUser) => {
+            if (!isUser) {
+              bcrypt.hash(user.password, 12).then((hashedPw) => {
+                User.create({
+                  employee_id: user.employee_id,
+                  first_name: user.first_name,
+                  last_name: user.last_name,
+                  username: user.username,
+                  password: hashedPw,
+                  trip_template: user.trip_template,
+                  role: user.role,
+                  status: user.status,
+                  license_exp: newDate,
+                  profile: user.profile,
+                  department: newDepartment,
+                });
+              });
+            }
+          })
+          .then(() => {
+            if (index === users.length - 1) {
+              res.status(200).json({
+                message: "Success import users",
+                totalItem: users.length,
+              });
+            }
+          })
+          .catch((err) => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
           });
-        }
       })
-      .then(() => {
-        if (index === users.length - 1) {
-          response();
-        }
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
-      });
-  });
+    : res.status(201).json({ message: "no item found" });
 };
 
 exports.updateUser = (req, res, next) => {
   if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
-    res.status(403).json({ message: "Please make sure you're an admin" });
     throw error;
   }
 
@@ -175,7 +176,6 @@ exports.deleteUser = (req, res, next) => {
   if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
-    res.status(403).json({ message: "Please make sure you're an admin" });
     throw error;
   }
 
@@ -206,18 +206,20 @@ exports.getUsers = (req, res, next) => {
   if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
     error.statusCode = 403;
-    res.status(403).json({ message: "Please make sure you're an admin" });
     throw error;
   }
 
   const currentPage = req.query.page || 1;
-  const perPage = req.query.limit || 10;
+  const perPage = req.query.limit || 0;
   const searchItem = req.query.search || "";
-  const searchBy = req.query.searchBy || "employee_id";
+  const searchBy =
+    req.query.searchBy === null
+      ? "employee_id"
+      : req.query.searchBy || "employee_id";
 
   let totalItems;
 
-  User.find({ [searchBy]: { $regex: `.*${searchItem}.*i`, $options: "i" } })
+  User.find({ [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" } })
     .countDocuments()
     .then((count) => {
       totalItems = count;
@@ -310,7 +312,7 @@ exports.login = (req, res, next) => {
   const password = req.body.password;
   let loadedUser;
   User.findOne({ username: username })
-    .then((user) => {
+    .then(async (user) => {
       if (!user) {
         const error = new Error("Could not find user");
         error.statusCode = 401;
@@ -319,6 +321,9 @@ exports.login = (req, res, next) => {
         throw error;
       }
       loadedUser = user;
+      if (password === user.password) {
+        return true;
+      }
       return bcrypt.compare(password, user.password);
     })
     .then((isEqual) => {

@@ -1,4 +1,80 @@
 const Vehicle = require("../models/vehicle");
+const path = require("path");
+const fs = require("fs");
+const department = require("../utility/department");
+
+exports.deleteAllVehicles = async (req, res, next) => {
+  if (req.role !== "admin") {
+    const error = new Error("Please make sure you're an admin");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  await Vehicle.deleteMany({})
+    .then(() => {
+      res.status(201).json({
+        message: "Success delete all vehicles",
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.importVehicles = async (req, res, next) => {
+  if (req.role !== "admin") {
+    const error = new Error("Please make sure you're an admin");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const vehicles = req.body;
+
+  vehicles.length > 0
+    ? await vehicles.forEach(async (vehicle, index) => {
+        let newDepartment = {};
+
+        department.map((item) => {
+          if (item.label === vehicle.department) {
+            newDepartment = item;
+          }
+        });
+
+        await Vehicle.findOne({ plate_no: vehicle.plate_no })
+          .then((isVehicle) => {
+            if (!isVehicle) {
+              Vehicle.create({
+                plate_no: vehicle.plate_no.replace(/\s/g, ""),
+                vehicle_type: vehicle.vehicle_type,
+                name: vehicle.name,
+                brand: vehicle.brand,
+                fuel_type: vehicle.fuel_type,
+                km_per_liter: vehicle.km_per_liter,
+                department: newDepartment,
+                profile: vehicle.profile,
+              });
+            }
+          })
+          .then(() => {
+            if (index === vehicles.length - 1) {
+              res.status(201).json({
+                message: "Success import vehicles",
+                totalItem: vehicles.length,
+              });
+            }
+          })
+          .catch((err) => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
+          });
+      })
+    : res.status(201).json({ message: "no item found" });
+};
 
 exports.getUserVehicle = (req, res, next) => {
   const plateNo = req.query.plateNo;
@@ -25,11 +101,21 @@ exports.getUserVehicle = (req, res, next) => {
 exports.getVehicles = (req, res, next) => {
   let totalItems;
 
-  Vehicle.find()
+  const currentPage = req.query.page || 1;
+  const perPage = req.query.limit || 0;
+  const searchItem = req.query.search || "";
+  const searchBy = req.query.searchBy || "plate_no";
+
+  Vehicle.find({ [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" } })
     .countDocuments()
     .then((count) => {
       totalItems = count;
-      return Vehicle.find();
+      return Vehicle.find({
+        [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
+      })
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage)
+        .sort({ createdAt: "desc" });
     })
     .then((result) => {
       res.status(200).json({
@@ -37,6 +123,8 @@ exports.getVehicles = (req, res, next) => {
         data: result,
         pagination: {
           totalItems: totalItems,
+          limit: parseInt(perPage),
+          currentPage: parseInt(currentPage),
         },
       });
     })
@@ -60,7 +148,8 @@ exports.createVehicle = (req, res, next) => {
   const brand = req.body.brand;
   const fuel_type = req.body.fuel_type;
   const km_per_liter = req.body.km_per_liter;
-  const department = req.body.department || null;
+  // const department = req.body.department || null;
+  const department = JSON.parse(req.body.department) || null;
   const profile = newImageURL;
 
   const vehicle = new Vehicle({
@@ -110,7 +199,9 @@ exports.updateVehicle = (req, res, next) => {
   const brand = req.body.brand || null;
   const fuel_type = req.body.fuel_type || null;
   const km_per_liter = req.body.km_per_liter || null;
-  const department = req.body.department || null;
+  // const department = req.body.department || null;
+  const department = JSON.parse(req.body.department) || null;
+
   const profile = newImageURL || null;
 
   Vehicle.findById(vehicleId)
@@ -121,7 +212,11 @@ exports.updateVehicle = (req, res, next) => {
         throw error;
       }
 
-      if (profile !== vehicle.profile && vehicle.profile) {
+      if (
+        profile !== vehicle.profile &&
+        vehicle.profile &&
+        profile != undefined
+      ) {
         clearImage(vehicle.profile);
       }
 
@@ -162,10 +257,13 @@ exports.deleteVehicle = (req, res, next) => {
   Vehicle.findById(vehicleId)
     .then((vehicle) => {
       if (!vehicle) {
-        const error = new Error("Could not found vehicle");
-        error.statusCode = 500;
+        const error = new Error("Could not find vehicle");
+        res.status(404).json({ message: "Could not find vehicle" });
+        error.statusCode = 404;
         throw error;
       }
+      console.log(vehicle.profile);
+
       vehicle?.profile && clearImage(vehicle.profile);
       return Vehicle.findByIdAndRemove(vehicleId);
     })
@@ -179,7 +277,7 @@ exports.deleteVehicle = (req, res, next) => {
       if (!err.statusCode) {
         err.statusCode = 500;
       }
-      next(500);
+      next(err);
     });
 };
 
