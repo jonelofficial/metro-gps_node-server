@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-
 const Trip = require("../../models/office/trip");
 const Location = require("../../models/office/location");
 const Diesel = require("../../models/office/diesel");
@@ -140,33 +139,100 @@ exports.getTrips = (req, res, next) => {
   // office/trips?page=
   const currentPage = req.query.page || 1;
   const perPage = req.query.limit || 25;
+  let searchItem = req.query.search || "";
+  const searchBy = req.query.searchBy || "_id";
+  const dateItem = req.query.date;
+
+  // console.log("ITEM: ", searchItem);
+  // console.log("DATE: ", dateItem);
+  // console.log("SEARCH BY: ", searchBy);
 
   let totalItems;
 
-  Trip.find()
-    .countDocuments()
-    .then((count) => {
-      totalItems = count;
-      return Trip.find()
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
+  if (searchBy === "trip_date" || searchBy === "createdAt") {
+    Trip.find({
+      [searchBy]: {
+        $gte: `${dateItem}T00:00:00`,
+        $lte: `${dateItem}T23:59:59`,
+      },
     })
-    .then((result) => {
-      res.status(200).json({
-        message: "Fetch trip successfully",
-        data: result,
-        pagination: {
-          totalItems: totalItems,
-          currentPage: parseInt(currentPage),
-        },
+      .countDocuments()
+      .then((count) => {
+        console.log("on date");
+        totalItems = count;
+        return Trip.find({
+          [searchBy]: {
+            $gte: `${dateItem}T00:00:00`,
+            $lte: `${dateItem}T23:59:59`,
+          },
+        })
+          .populate("locations")
+          .populate("diesels")
+          .populate("user_id")
+          .populate("vehicle_id")
+          .skip((currentPage - 1) * perPage)
+          .limit(perPage);
+      })
+      .then((result) => {
+        res.status(200).json({
+          message: "Fetch trip successfully",
+          data: result,
+          pagination: {
+            totalItems: totalItems,
+            currentPage: parseInt(currentPage),
+          },
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
       });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
+  } else {
+    Trip.find()
+      .populate("locations")
+      .populate("diesels")
+      .populate("user_id")
+      .populate("vehicle_id")
+      .then((trips) => {
+        return trips.filter((trip) => {
+          searchItem = searchItem.toLowerCase();
+          const searchProps = searchBy.split(".");
+          let obj = trip;
+          for (const prop of searchProps) {
+            obj = obj[prop];
+            if (Array.isArray(obj)) {
+              if (prop === "companion") {
+                return obj.find((el) =>
+                  el.firstName.toString().toLowerCase().includes(searchItem)
+                );
+              }
+              return obj.find(
+                (el) => el && el.toString().toLowerCase().includes(searchItem)
+              );
+            }
+            if (!obj) return false;
+          }
+          return obj.toString().toLowerCase().includes(searchItem);
+        });
+      })
+      .then((result) => {
+        res.status(200).json({
+          data: result,
+          pagination: {
+            totalItems: result.length,
+            currentPage: parseInt(currentPage),
+          },
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  }
 };
 
 exports.createTrip = async (req, res, next) => {
@@ -183,7 +249,7 @@ exports.createTrip = async (req, res, next) => {
   const companion = JSON.parse(req.body.companion) || null;
   const others = req.body.others || null;
   const points = JSON.parse(req.body.points) || null;
-  const trip_date = req.body.trip_date || Date.now;
+  const trip_date = req.body.trip_date || new Date();
 
   const trip = new Trip({
     user_id: user_id,
@@ -219,6 +285,8 @@ exports.updateTrip = (req, res, next) => {
   if (req.file) {
     newImageURL = req.file.path.replace("\\", "/");
   }
+
+  console.log(req.body);
 
   const user_id = req.body.user_id || null;
   const vehicle_id = req.body.vehicle_id || null;
