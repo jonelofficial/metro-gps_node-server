@@ -216,37 +216,83 @@ exports.getUsers = (req, res, next) => {
     req.query.searchBy === null
       ? "employee_id"
       : req.query.searchBy || "employee_id";
+  const dateItem = req.query.date;
 
   let totalItems;
 
-  User.find({ [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" } })
-    .countDocuments()
-    .then((count) => {
-      totalItems = count;
-      return User.find({
-        [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
+  if (searchBy === "license_exp") {
+    let date = new Date(dateItem);
+
+    // Add 1 month to the date
+    date.setMonth(date.getMonth() + 1);
+    const newDate = date.toISOString().slice(0, 10);
+
+    User.find({
+      [searchBy]: {
+        $gte: `${dateItem}T00:00:00`,
+        $lte: `${newDate}T23:59:59`,
+      },
+    })
+      .countDocuments()
+      .then((count) => {
+        totalItems = count;
+        return User.find({
+          [searchBy]: {
+            $gte: `${dateItem}T00:00:00`,
+            $lte: `${newDate}T23:59:59`,
+          },
+        })
+          .skip((currentPage - 1) * perPage)
+          .limit(perPage)
+          .sort({ createdAt: "desc" });
       })
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage)
-        .sort({ createdAt: "desc" });
-    })
-    .then((result) => {
-      res.status(200).json({
-        message: "Fetch user successfully",
-        data: result,
-        pagination: {
-          totalItems: totalItems,
-          limit: parseInt(perPage),
-          currentPage: parseInt(currentPage),
-        },
+      .then((result) => {
+        res.status(200).json({
+          message: "Fetch user successfully",
+          data: result,
+          pagination: {
+            totalItems: totalItems,
+            limit: parseInt(perPage),
+            currentPage: parseInt(currentPage),
+          },
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
       });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
+  } else {
+    User.find({ [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" } })
+      .countDocuments()
+      .then((count) => {
+        totalItems = count;
+        return User.find({
+          [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
+        })
+          .skip((currentPage - 1) * perPage)
+          .limit(perPage)
+          .sort({ createdAt: "desc" });
+      })
+      .then((result) => {
+        res.status(200).json({
+          message: "Fetch user successfully",
+          data: result,
+          pagination: {
+            totalItems: totalItems,
+            limit: parseInt(perPage),
+            currentPage: parseInt(currentPage),
+          },
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  }
 };
 
 exports.createUser = (req, res, next) => {
