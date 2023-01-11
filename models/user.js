@@ -46,6 +46,9 @@ const userSchema = new Schema(
       type: Object,
       // required: true,
     },
+    permission: {
+      type: JSON,
+    },
   },
   { timestamps: true }
 );

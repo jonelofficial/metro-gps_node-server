@@ -121,6 +121,7 @@ exports.updateUser = (req, res, next) => {
   const status = req.body.status || null;
   const profile = newImageURl || null;
   const department = JSON.parse(req.body.department) || null;
+  const permission = JSON.parse(req.body.permission) || null;
   // image validation here
 
   User.findById(userId)
@@ -152,6 +153,7 @@ exports.updateUser = (req, res, next) => {
             user.role = role || user.role;
             user.profile = profile || user.profile;
             user.department = department || user.department;
+            user.permission = permission || user.permission;
             return user.save();
           })
           .then((result) => {
@@ -320,6 +322,7 @@ exports.createUser = (req, res, next) => {
   const license_exp = req.body.license_exp;
   const profile = newImageURl;
   const department = JSON.parse(req.body.department);
+  const permission = JSON.parse(req.body.permission) || null;
 
   bcrypt
     .hash(password, 12)
@@ -336,6 +339,7 @@ exports.createUser = (req, res, next) => {
         license_exp: license_exp,
         profile: profile,
         department: department,
+        permission: permission,
       });
       return user.save();
     })
@@ -388,6 +392,7 @@ exports.login = (req, res, next) => {
           first_name: loadedUser.first_name,
           last_name: loadedUser.last_name,
           trip_template: loadedUser.trip_template,
+          permission: loadedUser.permission,
         },
         process.env.SECRET_KEY
         // { expiresIn: "12h" }
