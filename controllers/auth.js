@@ -121,7 +121,13 @@ exports.updateUser = (req, res, next) => {
   const status = req.body.status || null;
   const profile = newImageURl || null;
   const department = JSON.parse(req.body.department) || null;
-  const permission = JSON.parse(req.body.permission) || null;
+  const sub_unit = JSON.parse(req.body.sub_unit) || null;
+  const location = JSON.parse(req.body.location) || null;
+  const division = JSON.parse(req.body.division) || null;
+  const division_category = JSON.parse(req.body.division_category) || null;
+  const company = JSON.parse(req.body.company) || null;
+  const permission =
+    (req.body?.permission && JSON.parse(req.body.permission)) || null;
   // image validation here
 
   User.findById(userId)
@@ -153,6 +159,12 @@ exports.updateUser = (req, res, next) => {
             user.role = role || user.role;
             user.profile = profile || user.profile;
             user.department = department || user.department;
+            user.sub_unit = sub_unit || user.sub_unit;
+            user.location = location || user.location;
+            user.division = division || user.division;
+            user.division_category =
+              division_category || user.division_category;
+            user.company = company || user.company;
             user.permission = permission || user.permission;
             return user.save();
           })
@@ -322,7 +334,13 @@ exports.createUser = (req, res, next) => {
   const license_exp = req.body.license_exp;
   const profile = newImageURl;
   const department = JSON.parse(req.body.department);
-  const permission = JSON.parse(req.body.permission) || null;
+  const sub_unit = JSON.parse(req.body.sub_unit);
+  const location = JSON.parse(req.body.location);
+  const division = JSON.parse(req.body.division);
+  const division_category = JSON.parse(req.body.division_category);
+  const company = JSON.parse(req.body.company);
+  const permission =
+    (req.body?.permission && JSON.parse(req.body.permission)) || null;
 
   bcrypt
     .hash(password, 12)
@@ -339,6 +357,11 @@ exports.createUser = (req, res, next) => {
         license_exp: license_exp,
         profile: profile,
         department: department,
+        sub_unit: sub_unit,
+        location: location,
+        division: division,
+        division_category: division_category,
+        company: company,
         permission: permission,
       });
       return user.save();

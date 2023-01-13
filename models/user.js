@@ -40,11 +40,24 @@ const userSchema = new Schema(
     },
     status: {
       type: String,
-      // required: true,
     },
     department: {
       type: Object,
-      // required: true,
+    },
+    sub_unit: {
+      type: Object,
+    },
+    location: {
+      type: Object,
+    },
+    division: {
+      type: Object,
+    },
+    division_category: {
+      type: Object,
+    },
+    company: {
+      type: Object,
     },
     permission: {
       type: JSON,
