@@ -7,6 +7,7 @@ const gasStationSchema = new Schema(
     label: {
       type: String,
       required: true,
+      unique: true,
     },
   },
   { timestamps: true }

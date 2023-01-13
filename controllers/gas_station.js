@@ -108,17 +108,30 @@ exports.getStation = (req, res, next) => {
 exports.createStation = (req, res, next) => {
   const label = req.body.label;
 
-  const station = new GasStation({
-    label: label,
-  });
-
-  station
-    .save()
+  GasStation.find({ label: label })
     .then((result) => {
-      res.status(201).json({
-        message: "Success create gas station",
-        data: result,
-      });
+      if (result.length > 0) {
+        res.status(409).json({ error: `Label "${label}" already exist` });
+      } else {
+        const station = new GasStation({
+          label: label,
+        });
+
+        station
+          .save()
+          .then((result) => {
+            res.status(201).json({
+              message: "Success create gas station",
+              data: result,
+            });
+          })
+          .catch((err) => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
+          });
+      }
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -138,23 +151,39 @@ exports.updateStation = (req, res, next) => {
 
   const label = req.body.label;
 
-  GasStation.findById(stationId)
-    .then((station) => {
-      if (!station) {
-        const error = new Error("Station not found");
-        error.statusCode = 500;
-        throw error;
-      }
-
-      station.label = label;
-
-      return station.save();
-    })
+  GasStation.find({ label: label })
     .then((result) => {
-      res.status(201).json({
-        message: "Success update station",
-        data: result,
-      });
+      if (
+        result.length <= 0 ||
+        (result.length <= 1 && stationId == result[0]._id)
+      ) {
+        GasStation.findById(stationId)
+          .then((station) => {
+            if (!station) {
+              const error = new Error("Station not found");
+              error.statusCode = 500;
+              throw error;
+            }
+
+            station.label = label;
+
+            return station.save();
+          })
+          .then((result) => {
+            res.status(201).json({
+              message: "Success update station",
+              data: result,
+            });
+          })
+          .catch((err) => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
+          });
+      } else {
+        res.status(409).json({ error: `Label "${label}" already exist` });
+      }
     })
     .catch((err) => {
       if (!err.statusCode) {

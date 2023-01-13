@@ -7,6 +7,7 @@ const vehicleSchema = new Schema(
     plate_no: {
       type: String,
       required: true,
+      unique: true,
     },
     vehicle_type: {
       type: String,

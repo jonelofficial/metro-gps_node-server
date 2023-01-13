@@ -152,24 +152,39 @@ exports.createVehicle = (req, res, next) => {
   const department = JSON.parse(req.body.department) || null;
   const profile = newImageURL;
 
-  const vehicle = new Vehicle({
-    plate_no: plate_no,
-    vehicle_type: vehicle_type,
-    name: name,
-    brand: brand,
-    fuel_type: fuel_type,
-    km_per_liter: km_per_liter,
-    department: department,
-    profile: profile,
-  });
-
-  vehicle
-    .save()
+  Vehicle.find({ plate_no: plate_no })
     .then((result) => {
-      res.status(201).json({
-        message: "Success create vehicle",
-        data: result,
-      });
+      if (result.length > 0) {
+        res
+          .status(409)
+          .json({ error: `Plate Number "${plate_no}" already exist` });
+      } else {
+        const vehicle = new Vehicle({
+          plate_no: plate_no,
+          vehicle_type: vehicle_type,
+          name: name,
+          brand: brand,
+          fuel_type: fuel_type,
+          km_per_liter: km_per_liter,
+          department: department,
+          profile: profile,
+        });
+
+        vehicle
+          .save()
+          .then((result) => {
+            res.status(201).json({
+              message: "Success create vehicle",
+              data: result,
+            });
+          })
+          .catch((err) => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
+          });
+      }
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -204,38 +219,58 @@ exports.updateVehicle = (req, res, next) => {
 
   const profile = newImageURL || null;
 
-  Vehicle.findById(vehicleId)
-    .then((vehicle) => {
-      if (!vehicle) {
-        const error = new Error("Could not found vehicle");
-        error.statusCode = 500;
-        throw error;
-      }
+  console.log(vehicleId);
 
-      if (
-        profile !== vehicle.profile &&
-        vehicle.profile &&
-        profile != undefined
-      ) {
-        clearImage(vehicle.profile);
-      }
-
-      vehicle.plate_no = plate_no || vehicle.plate_no;
-      vehicle.vehicle_type = vehicle_type || vehicle.vehicle_type;
-      vehicle.name = name || vehicle.name;
-      vehicle.brand = brand || vehicle.brand;
-      vehicle.fuel_type = fuel_type || vehicle.fuel_type;
-      vehicle.km_per_liter = km_per_liter || vehicle.km_per_liter;
-      vehicle.department = department || vehicle.department;
-      vehicle.profile = profile || vehicle.profile;
-
-      return vehicle.save();
-    })
+  Vehicle.find({ plate_no: plate_no })
     .then((result) => {
-      res.status(201).json({
-        message: "Success update vehicle",
-        data: result,
-      });
+      if (
+        result.length <= 0 ||
+        (result.length <= 1 && vehicleId == result[0]._id)
+      ) {
+        Vehicle.findById(vehicleId)
+          .then((vehicle) => {
+            if (!vehicle) {
+              const error = new Error("Could not found vehicle");
+              error.statusCode = 500;
+              throw error;
+            }
+
+            if (
+              profile !== vehicle.profile &&
+              vehicle.profile &&
+              profile != undefined
+            ) {
+              clearImage(vehicle.profile);
+            }
+
+            vehicle.plate_no = plate_no || vehicle.plate_no;
+            vehicle.vehicle_type = vehicle_type || vehicle.vehicle_type;
+            vehicle.name = name || vehicle.name;
+            vehicle.brand = brand || vehicle.brand;
+            vehicle.fuel_type = fuel_type || vehicle.fuel_type;
+            vehicle.km_per_liter = km_per_liter || vehicle.km_per_liter;
+            vehicle.department = department || vehicle.department;
+            vehicle.profile = profile || vehicle.profile;
+
+            return vehicle.save();
+          })
+          .then((result) => {
+            res.status(201).json({
+              message: "Success update vehicle",
+              data: result,
+            });
+          })
+          .catch((err) => {
+            if (!err.statusCode) {
+              err.statusCode = 500;
+            }
+            next(err);
+          });
+      } else {
+        res
+          .status(409)
+          .json({ error: `Plate Number "${plate_no}" already exist` });
+      }
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -243,6 +278,46 @@ exports.updateVehicle = (req, res, next) => {
       }
       next(err);
     });
+
+  // Vehicle.findById(vehicleId)
+  //   .then((vehicle) => {
+  //     if (!vehicle) {
+  //       const error = new Error("Could not found vehicle");
+  //       error.statusCode = 500;
+  //       throw error;
+  //     }
+
+  //     if (
+  //       profile !== vehicle.profile &&
+  //       vehicle.profile &&
+  //       profile != undefined
+  //     ) {
+  //       clearImage(vehicle.profile);
+  //     }
+
+  //     vehicle.plate_no = plate_no || vehicle.plate_no;
+  //     vehicle.vehicle_type = vehicle_type || vehicle.vehicle_type;
+  //     vehicle.name = name || vehicle.name;
+  //     vehicle.brand = brand || vehicle.brand;
+  //     vehicle.fuel_type = fuel_type || vehicle.fuel_type;
+  //     vehicle.km_per_liter = km_per_liter || vehicle.km_per_liter;
+  //     vehicle.department = department || vehicle.department;
+  //     vehicle.profile = profile || vehicle.profile;
+
+  //     return vehicle.save();
+  //   })
+  //   .then((result) => {
+  //     res.status(201).json({
+  //       message: "Success update vehicle",
+  //       data: result,
+  //     });
+  //   })
+  //   .catch((err) => {
+  //     if (!err.statusCode) {
+  //       err.statusCode = 500;
+  //     }
+  //     next(err);
+  //   });
 };
 
 exports.deleteVehicle = (req, res, next) => {
@@ -262,7 +337,6 @@ exports.deleteVehicle = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
-      console.log(vehicle.profile);
 
       vehicle?.profile && clearImage(vehicle.profile);
       return Vehicle.findByIdAndRemove(vehicleId);
