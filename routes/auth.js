@@ -29,7 +29,20 @@ router.post(
 router.post("/login", authController.login);
 router.get("/users", isAuth, authController.getUsers);
 router.delete("/delete-user/:userId", isAuth, authController.deleteUser);
-router.put("/update-user/:userId", isAuth, authController.updateUser);
+router.put(
+  "/update-user/:userId",
+  [
+    body("username").custom(async (value) => {
+      return await User.findOne({ username: value }).then((user) => {
+        if (user.length > 1) {
+          return Promise.reject("Username already exist");
+        }
+      });
+    }),
+  ],
+  isAuth,
+  authController.updateUser
+);
 router.post("/import-users", isAuth, authController.importUsers);
 router.delete("/delete-all-users", isAuth, authController.deleteAllUsers);
 
