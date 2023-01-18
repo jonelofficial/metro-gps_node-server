@@ -158,7 +158,6 @@ exports.getTrips = (req, res, next) => {
     })
       .countDocuments()
       .then((count) => {
-        console.log("on date");
         totalItems = count;
         return Trip.find({
           [searchBy]: {
@@ -219,7 +218,10 @@ exports.getTrips = (req, res, next) => {
       })
       .then((result) => {
         res.status(200).json({
-          data: result,
+          data: result.slice(
+            (currentPage - 1) * perPage,
+            parseInt((currentPage - 1) * perPage) + parseInt(perPage)
+          ),
           pagination: {
             totalItems: result.length,
             currentPage: parseInt(currentPage),
@@ -285,8 +287,6 @@ exports.updateTrip = (req, res, next) => {
   if (req.file) {
     newImageURL = req.file.path.replace("\\", "/");
   }
-
-  console.log(req.body);
 
   const user_id = req.body.user_id || null;
   const vehicle_id = req.body.vehicle_id || null;

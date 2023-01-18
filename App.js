@@ -16,6 +16,7 @@ const officeDieselStationRoutes = require("./routes/office/diesel");
 const officeLocationStationRoutes = require("./routes/office/location");
 
 const officeReportsRoutes = require("./routes/office/reports");
+const dashboardRoutes = require("./routes/dashboard");
 
 const app = express();
 
@@ -82,6 +83,8 @@ app.use("/office", officeDieselStationRoutes);
 
 // Portal Reports
 app.use("/reports-office", officeReportsRoutes);
+// Dashboard
+app.use("/dashboard", dashboardRoutes);
 
 // Error Cb
 app.use((error, req, res, next) => {
