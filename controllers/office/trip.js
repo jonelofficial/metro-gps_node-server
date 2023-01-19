@@ -218,10 +218,13 @@ exports.getTrips = (req, res, next) => {
       })
       .then((result) => {
         res.status(200).json({
-          data: result.slice(
-            (currentPage - 1) * perPage,
-            parseInt((currentPage - 1) * perPage) + parseInt(perPage)
-          ),
+          data:
+            perPage <= 0 || perPage === "undefined"
+              ? result
+              : result.slice(
+                  (currentPage - 1) * perPage,
+                  parseInt((currentPage - 1) * perPage) + parseInt(perPage)
+                ),
           pagination: {
             totalItems: result.length,
             currentPage: parseInt(currentPage),
