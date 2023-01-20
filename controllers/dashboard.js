@@ -3,21 +3,169 @@ const GasStation = require("../models/gas_station");
 const Vehicle = require("../models/vehicle");
 const Trip = require("../models/office/trip");
 const { getPathLength } = require("geolib");
+const dayjs = require("dayjs");
 
-const isValidated = (req) => {
-  if (req.role !== "admin") {
-    const error = new Error("Please make sure you're an admin");
-    error.statusCode = 403;
-    throw error;
-  }
+exports.TotalTripDriver = (req, res, next) => {
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const search = req.query.search || "";
+  const searchBy = req.query.searchBy == "null" ? "driver" : req.query.searchBy;
+
+  let filteredData = {};
+
+  Trip.find()
+    .populate("locations")
+    .populate("diesels")
+    .populate("user_id")
+    .populate("vehicle_id")
+    .then((result) => {
+      result.forEach((item) => {
+        const driver = item.user_id._id;
+        if (!filteredData[driver]) {
+          filteredData[driver] = {
+            employee_id: item.user_id.employee_id,
+            driver: `${item.user_id.first_name} ${item.user_id.last_name}`,
+            trip: 1,
+            department: item.user_id.department,
+          };
+        } else {
+          filteredData[driver].trip++;
+        }
+      });
+
+      const obj = Object.values(filteredData);
+
+      return obj.filter((trip) => {
+        const searchItem = search.toLowerCase();
+        const searchProps = searchBy.split(".");
+        let obj = trip;
+        for (const prop of searchProps) {
+          if (prop === "department") {
+            obj = obj.department;
+          } else if (
+            prop === "trip" ||
+            obj[prop] !== 0 ||
+            obj[prop] !== null ||
+            obj[prop] !== undefined
+          ) {
+            obj = obj[prop].toString();
+          } else {
+            obj = obj[prop];
+          }
+          console.log(prop);
+          console.log(obj);
+
+          if (!obj) return false;
+        }
+        return obj.toString().toLowerCase().includes(searchItem);
+      });
+    })
+    .then((result) => {
+      res.status(201).json({
+        message: "done",
+        data: result.slice(
+          (page - 1) * limit,
+          parseInt((page - 1) * limit) + parseInt(limit)
+        ),
+        pagination: {
+          totalItems: result.slice(
+            (page - 1) * limit,
+            parseInt((page - 1) * limit) + parseInt(limit)
+          ).length,
+          currentPage: parseInt(page),
+        },
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.LongestTravelDuration = (req, res, next) => {
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const search = req.query.search || "";
+  const searchBy = req.query.searchBy == "null" ? "_id" : req.query.searchBy;
+
+  let filteredData = [];
+
+  Trip.find()
+    .populate("locations")
+    .populate("diesels")
+    .populate("user_id")
+    .populate("vehicle_id")
+    .then((result) => {
+      result.forEach((trip) => {
+        const startDate = dayjs(trip.locations[0].date);
+        const endDate = dayjs(trip.locations[trip.locations.length - 1].date);
+        const duration = endDate.diff(startDate);
+
+        filteredData.push({
+          _id: trip._id,
+          duration: duration,
+          plate_no: trip.vehicle_id.plate_no,
+          departure: trip.locations[0].date,
+          arrival: trip.locations[trip.locations.length - 1].date,
+        });
+      });
+
+      const obj = filteredData
+        .sort((a, b) => b.duration - a.duration)
+        .slice(0, 20);
+
+      return obj.filter((trip) => {
+        const searchItem = search.toLowerCase();
+        const searchProps = searchBy.split(".");
+        let obj = trip;
+        for (const prop of searchProps) {
+          if (
+            prop !== "duration" ||
+            obj[prop] !== 0 ||
+            obj[prop] !== null ||
+            obj[prop] !== undefined
+          ) {
+            obj = obj[prop].toString();
+          } else {
+            obj = obj[prop];
+          }
+
+          if (!obj) return false;
+        }
+        return obj.toString().toLowerCase().includes(searchItem);
+      });
+    })
+    .then((data) => {
+      res.status(201).json({
+        message: "done",
+        data: data.slice(
+          (page - 1) * limit,
+          parseInt((page - 1) * limit) + parseInt(limit)
+        ),
+        pagination: {
+          totalItems: data.slice(
+            (page - 1) * limit,
+            parseInt((page - 1) * limit) + parseInt(limit)
+          ).length,
+          currentPage: parseInt(page),
+        },
+      });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
 
 exports.HighestKMrun = (req, res, next) => {
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
   const search = req.query.search || "";
-  // const searchBy = req.query.searchBy == "null" ? "_id" : req.query.searchBy;
-  const searchBy = req.query.searchBy || "_id";
+  const searchBy = req.query.searchBy == "null" ? "_id" : req.query.searchBy;
 
   let filteredData = [];
 
@@ -39,14 +187,23 @@ exports.HighestKMrun = (req, res, next) => {
         });
       });
 
-      const obj = filteredData.sort((a, b) => b.km - a.km);
+      const obj = filteredData.sort((a, b) => b.km - a.km).slice(0, 20);
 
       return obj.filter((trip) => {
         searchItem = search.toLowerCase();
         const searchProps = searchBy.split(".");
         let obj = trip;
         for (const prop of searchProps) {
-          obj = obj[prop];
+          if (
+            prop !== "km" ||
+            obj[prop] !== 0 ||
+            obj[prop] !== null ||
+            obj[prop] !== undefined
+          ) {
+            obj = obj[prop].toString();
+          } else {
+            obj = obj[prop];
+          }
           if (Array.isArray(obj)) {
             return obj.find(
               (el) => el && el.toString().toLowerCase().includes(searchItem)
@@ -125,6 +282,7 @@ exports.TVDTdeparment = async (req, res, next) => {
           });
         })
         .then(() => {
+          filteredData.slice(0, 20);
           const newObj = filteredData.filter((item) => {
             searchItem = search.toLowerCase();
             const searchProps = searchBy.split(".");
