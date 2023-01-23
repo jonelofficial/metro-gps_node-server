@@ -52,8 +52,6 @@ exports.TotalTripDriver = (req, res, next) => {
           } else {
             obj = obj[prop];
           }
-          console.log(prop);
-          console.log(obj);
 
           if (!obj) return false;
         }
