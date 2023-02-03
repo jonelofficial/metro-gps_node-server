@@ -43,7 +43,7 @@ exports.importVehicles = async (req, res, next) => {
           }
         });
 
-        await Vehicle.findOne({ plate_no: vehicle.plate_no })
+        await Vehicle.findOne({ plate_no: vehicle.plate_no.replace(/\s/g, "") })
           .then((isVehicle) => {
             if (!isVehicle) {
               Vehicle.create({
@@ -142,7 +142,7 @@ exports.createVehicle = (req, res, next) => {
     newImageURL = req.file.path.replace("\\", "/");
   }
 
-  const plate_no = req.body.plate_no;
+  const plate_no = req.body.plate_no.replace(/\s/g, "");
   const vehicle_type = req.body.vehicle_type;
   const name = req.body.name;
   const brand = req.body.brand;

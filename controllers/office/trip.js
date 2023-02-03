@@ -143,12 +143,6 @@ exports.getTrips = (req, res, next) => {
   const searchBy = req.query.searchBy || "_id";
   const dateItem = req.query.date;
 
-  // console.log("ITEM: ", searchItem);
-  // console.log("DATE: ", dateItem);
-  // console.log("SEARCH BY: ", searchBy);
-
-  let totalItems;
-
   if (searchBy === "trip_date" || searchBy === "createdAt") {
     Trip.find({
       [searchBy]: {
@@ -194,6 +188,7 @@ exports.getTrips = (req, res, next) => {
       .populate("diesels")
       .populate("user_id")
       .populate("vehicle_id")
+      .sort({ createdAt: "desc" })
       .then((trips) => {
         return trips.filter((trip) => {
           searchItem = searchItem.toLowerCase();
