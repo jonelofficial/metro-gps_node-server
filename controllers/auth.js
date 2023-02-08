@@ -386,7 +386,7 @@ exports.login = (req, res, next) => {
   let loadedUser;
   User.findOne({ username: username })
     .then(async (user) => {
-      if (!user) {
+      if (!user || user?.status !== "active") {
         const error = new Error("Could not find user");
         error.statusCode = 401;
 
@@ -397,6 +397,7 @@ exports.login = (req, res, next) => {
       if (password === user.password) {
         return true;
       }
+
       return bcrypt.compare(password, user.password);
     })
     .then((isEqual) => {

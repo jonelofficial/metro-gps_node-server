@@ -10,6 +10,8 @@ router.put("/trip/:tripId", isAuth, tripController.updateTrip);
 router.delete("/trip/:tripId", isAuth, tripController.deleteTrip);
 router.delete("/trips/:userId", isAuth, tripController.deleteAllTrips);
 
+router.post("/apk-trip", isAuth, tripController.createApkTrip);
+
 //:page
 router.get("/trips/user", isAuth, tripController.getUserTrip);
 //:searhDate&page

@@ -249,11 +249,11 @@ exports.TVDTdeparment = async (req, res, next) => {
     .then((vehicleData) => {
       vehicleData.forEach((vehicle) => {
         let index = filteredData.findIndex(
-          (obj) => obj.department === vehicle.department.label
+          (obj) => obj.department === vehicle.department?.label
         );
         if (index == -1) {
           filteredData.push({
-            department: vehicle.department.label,
+            department: vehicle.department?.label,
             vehiclesCount: 1,
             driversCount: 0,
           });
@@ -266,11 +266,11 @@ exports.TVDTdeparment = async (req, res, next) => {
         .then((userData) => {
           userData.map((user) => {
             let index = filteredData.findIndex(
-              (obj) => obj.department === user.department.label
+              (obj) => obj.department === user.department?.label
             );
             if (index == -1) {
               filteredData.push({
-                department: user.department.label,
+                department: user.department?.label,
                 vehiclesCount: 0,
                 driversCount: 1,
               });

@@ -4,6 +4,74 @@ const Trip = require("../../models/office/trip");
 const Location = require("../../models/office/location");
 const Diesel = require("../../models/office/diesel");
 
+exports.createApkTrip = (req, res, next) => {
+  let newImageUrl;
+  if (req.file) {
+    newImageUrl = req.file.path.replace("\\", "/");
+  }
+
+  const trip_date = req.body.trip_date || new Date();
+  const user_id = req.userId;
+  const vehicle_id = req.body.vehicle_id;
+  const locations = JSON.parse(req.body.locations) || [];
+  const diesels = JSON.parse(req.body.diesels) || [];
+  const odometer = req.body.odometer || null;
+  const odometer_done = req.body.odometer_done || null;
+  const odometer_image_path = newImageUrl || null;
+  const others = req.body.others || "";
+  const companion = JSON.parse(req.body.companion) || null;
+  const points = JSON.parse(req.body.points) || [];
+
+  Trip.create({
+    user_id: user_id,
+    vehicle_id: vehicle_id,
+    odometer: odometer,
+    odometer_done: odometer_done,
+    odometer_image_path: odometer_image_path,
+    companion: companion,
+    others: others,
+    points: points,
+    trip_date: trip_date,
+  })
+    .then(async (result) => {
+      const trip_id = result._id;
+
+      await locations.map(async (location) => {
+        await Location.create({ trip_id: trip_id, ...location }).then(
+          async (result) => {
+            if (result?._id) {
+              await Trip.findById({ _id: trip_id }).then((trip) => {
+                trip.locations.push(result._id);
+                return trip.save();
+              });
+            }
+          }
+        );
+      });
+
+      await diesels.map(async (diesel) => {
+        await Diesel.create({ trip_id: trip_id, ...diesel }).then(
+          async (result) => {
+            if (result?._id) {
+              await Trip.findById({ _id: trip_id }).then((trip) => {
+                trip.diesels.push(result._id);
+                return trip.save();
+              });
+            }
+          }
+        );
+      });
+
+      res.status(201).json({ message: "Done creating apk trip", data: result });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
 exports.vehicleTrip = (req, res, next) => {
   const vehicleId = req.query.vehicleId;
 
