@@ -34,7 +34,7 @@ router.put(
   [
     body("username").custom(async (value) => {
       return await User.findOne({ username: value }).then((user) => {
-        if (user.length > 1) {
+        if (user?.length > 1) {
           return Promise.reject("Username already exist");
         }
       });

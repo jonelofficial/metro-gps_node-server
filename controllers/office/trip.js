@@ -10,34 +10,28 @@ exports.createApkTrip = (req, res, next) => {
     newImageUrl = req.file.path.replace("\\", "/");
   }
 
-  const trip_date = req.body.trip_date || new Date();
-  const user_id = req.userId;
-  const vehicle_id = req.body.vehicle_id;
-  const locations = JSON.parse(req.body.locations) || [];
+  let trip_id;
   const diesels = JSON.parse(req.body.diesels) || [];
-  const odometer = req.body.odometer || null;
-  const odometer_done = req.body.odometer_done || null;
-  const odometer_image_path = newImageUrl || null;
-  const others = req.body.others || "";
-  const companion = JSON.parse(req.body.companion) || null;
-  const points = JSON.parse(req.body.points) || [];
+  const locations = JSON.parse(req.body.locations) || [];
 
-  Trip.create({
-    user_id: user_id,
-    vehicle_id: vehicle_id,
-    odometer: odometer,
-    odometer_done: odometer_done,
-    odometer_image_path: odometer_image_path,
-    companion: companion,
-    others: others,
-    points: points,
-    trip_date: trip_date,
-  })
+  const tripObj = {
+    user_id: req.userId,
+    vehicle_id: req.body.vehicle_id,
+    odometer: req.body.odometer || null,
+    odometer_done: req.body.odometer_done || null,
+    odometer_image_path: newImageUrl || null,
+    companion: JSON.parse(req.body.companion) || null,
+    others: req.body.others || "",
+    points: JSON.parse(req.body.points) || [],
+    trip_date: req.body.trip_date || new Date(),
+  };
+
+  Trip.create(tripObj)
     .then(async (result) => {
-      const trip_id = result._id;
+      trip_id = result._id;
 
-      await locations.map(async (location) => {
-        await Location.create({ trip_id: trip_id, ...location }).then(
+      const locationsPromises = locations.map(async (location) => {
+        return Location.create({ trip_id: trip_id, ...location }).then(
           async (result) => {
             if (result?._id) {
               await Trip.findById({ _id: trip_id }).then((trip) => {
@@ -49,8 +43,8 @@ exports.createApkTrip = (req, res, next) => {
         );
       });
 
-      await diesels.map(async (diesel) => {
-        await Diesel.create({ trip_id: trip_id, ...diesel }).then(
+      const dieselsPromises = diesels.map(async (diesel) => {
+        return Diesel.create({ trip_id: trip_id, ...diesel }).then(
           async (result) => {
             if (result?._id) {
               await Trip.findById({ _id: trip_id }).then((trip) => {
@@ -62,7 +56,19 @@ exports.createApkTrip = (req, res, next) => {
         );
       });
 
-      res.status(201).json({ message: "Done creating apk trip", data: result });
+      return Promise.all([...locationsPromises, ...dieselsPromises]);
+    })
+    .then(() => {
+      Trip.findById({ _id: trip_id })
+        .populate("locations")
+        .populate("diesels")
+        .populate("user_id")
+        .populate("vehicle_id")
+        .then((trip) => {
+          res
+            .status(201)
+            .json({ message: "Done creating apk trip", data: trip });
+        });
     })
     .catch((err) => {
       if (!err.statusCode) {
