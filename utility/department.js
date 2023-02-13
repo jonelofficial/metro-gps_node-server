@@ -169,7 +169,7 @@ const department = [
   },
   {
     id: 717,
-    label: "Project Management",
+    label: "System Analysis and Design",
   },
   {
     id: 800,
