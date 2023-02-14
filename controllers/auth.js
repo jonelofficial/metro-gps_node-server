@@ -40,7 +40,7 @@ exports.importUsers = async (req, res, next) => {
 
   users.length > 0
     ? await users.forEach(async (user, index) => {
-        let newDepartment = {};
+        let newDepartment = { label: "No Department" };
 
         department.map((item) => {
           if (item.label === user.department) {
