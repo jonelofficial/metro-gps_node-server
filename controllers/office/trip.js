@@ -14,6 +14,8 @@ exports.createApkTrip = (req, res, next) => {
   const diesels = JSON.parse(req.body.diesels) || [];
   const locations = JSON.parse(req.body.locations) || [];
 
+  console.log(req.body);
+
   const tripObj = {
     user_id: req.userId,
     vehicle_id: req.body.vehicle_id,
@@ -28,6 +30,7 @@ exports.createApkTrip = (req, res, next) => {
 
   Trip.create(tripObj)
     .then(async (result) => {
+      console.log(result);
       trip_id = result._id;
 
       const locationsPromises = locations.map(async (location) => {
@@ -65,6 +68,7 @@ exports.createApkTrip = (req, res, next) => {
         .populate("user_id")
         .populate("vehicle_id")
         .then((trip) => {
+          console.log(trip);
           res
             .status(201)
             .json({ message: "Done creating apk trip", data: trip });
@@ -290,12 +294,10 @@ exports.getTrips = (req, res, next) => {
           data:
             perPage <= 0 || perPage === "undefined"
               ? result
-              : result
-                  .reverse()
-                  .slice(
-                    (currentPage - 1) * perPage,
-                    parseInt((currentPage - 1) * perPage) + parseInt(perPage)
-                  ),
+              : result.slice(
+                  (currentPage - 1) * perPage,
+                  parseInt((currentPage - 1) * perPage) + parseInt(perPage)
+                ),
           pagination: {
             totalItems: result.length,
             currentPage: parseInt(currentPage),

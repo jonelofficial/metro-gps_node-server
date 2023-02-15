@@ -6,8 +6,6 @@ const { validationResult } = require("express-validator");
 const User = require("../models/user");
 require("dotenv").config();
 
-const department = require("../utility/department");
-
 exports.deleteAllUsers = async (req, res, next) => {
   if (req.role !== "admin") {
     const error = new Error("Please make sure you're an admin");
@@ -40,14 +38,6 @@ exports.importUsers = async (req, res, next) => {
 
   users.length > 0
     ? await users.forEach(async (user, index) => {
-        let newDepartment = { label: "No Department" };
-
-        department.map((item) => {
-          if (item.label === user.department) {
-            newDepartment = item;
-          }
-        });
-
         const newDate = new Date(1900, 0, user.license_exp - 1).toDateString();
 
         await User.findOne({ username: user.username })
@@ -65,7 +55,7 @@ exports.importUsers = async (req, res, next) => {
                   status: user.status,
                   license_exp: newDate,
                   profile: user.profile,
-                  department: newDepartment,
+                  department: users.department,
                 });
               });
             }
@@ -120,12 +110,12 @@ exports.updateUser = (req, res, next) => {
   const license_exp = req.body.license_exp || null;
   const status = req.body.status || null;
   const profile = newImageURl || null;
-  const department = JSON.parse(req.body.department) || null;
-  const sub_unit = JSON.parse(req.body.sub_unit) || null;
-  const location = JSON.parse(req.body.location) || null;
-  const division = JSON.parse(req.body.division) || null;
-  const division_category = JSON.parse(req.body.division_category) || null;
-  const company = JSON.parse(req.body.company) || null;
+  const department = req.body.department;
+  const sub_unit = req.body.sub_unit;
+  const location = req.body.location;
+  const division = req.body.division;
+  const division_category = req.body.division_category;
+  const company = req.body.company;
   const permission =
     (req.body?.permission && JSON.parse(req.body.permission)) || null;
   // image validation here
@@ -333,12 +323,12 @@ exports.createUser = (req, res, next) => {
   const status = req.body.status;
   const license_exp = req.body.license_exp;
   const profile = newImageURl;
-  const department = JSON.parse(req.body.department);
-  const sub_unit = JSON.parse(req.body.sub_unit);
-  const location = JSON.parse(req.body.location);
-  const division = JSON.parse(req.body.division);
-  const division_category = JSON.parse(req.body.division_category);
-  const company = JSON.parse(req.body.company);
+  const department = req.body.department;
+  const sub_unit = req.body.sub_unit;
+  const location = req.body.location;
+  const division = req.body.division;
+  const division_category = req.body.division_category;
+  const company = req.body.company;
   const permission =
     (req.body?.permission && JSON.parse(req.body.permission)) || null;
 
