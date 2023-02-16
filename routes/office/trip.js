@@ -11,6 +11,7 @@ router.delete("/trip/:tripId", isAuth, tripController.deleteTrip);
 router.delete("/trips/:userId", isAuth, tripController.deleteAllTrips);
 
 router.post("/apk-trip", isAuth, tripController.createApkTrip);
+router.get("/apk-trips", isAuth, tripController.getApkTrips);
 
 //:page
 router.get("/trips/user", isAuth, tripController.getUserTrip);

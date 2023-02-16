@@ -14,8 +14,6 @@ exports.createApkTrip = (req, res, next) => {
   const diesels = JSON.parse(req.body.diesels) || [];
   const locations = JSON.parse(req.body.locations) || [];
 
-  console.log(req.body);
-
   const tripObj = {
     user_id: req.userId,
     vehicle_id: req.body.vehicle_id,
@@ -30,7 +28,6 @@ exports.createApkTrip = (req, res, next) => {
 
   Trip.create(tripObj)
     .then(async (result) => {
-      console.log(result);
       trip_id = result._id;
 
       const locationsPromises = locations.map(async (location) => {
@@ -68,7 +65,6 @@ exports.createApkTrip = (req, res, next) => {
         .populate("user_id")
         .populate("vehicle_id")
         .then((trip) => {
-          console.log(trip);
           res
             .status(201)
             .json({ message: "Done creating apk trip", data: trip });
@@ -80,6 +76,127 @@ exports.createApkTrip = (req, res, next) => {
       }
       next(err);
     });
+};
+
+exports.getApkTrips = (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = req.query.limit || 25;
+  let searchItem = req.query.search || "";
+  const searchBy = req.query.searchBy || "user_id._id";
+  const dateItem = req.query.date;
+
+  if (dateItem !== "null") {
+    Trip.find({
+      ["trip_date"]: {
+        $gte: `${dateItem}T00:00:00`,
+        $lte: `${dateItem}T23:59:59`,
+      },
+    })
+      .countDocuments()
+      .then((count) => {
+        totalItems = count;
+        return Trip.find({
+          ["trip_date"]: {
+            $gte: `${dateItem}T00:00:00`,
+            $lte: `${dateItem}T23:59:59`,
+          },
+        })
+          .populate("locations")
+          .populate("diesels")
+          .populate("user_id")
+          .populate("vehicle_id")
+          .skip((currentPage - 1) * perPage)
+          .limit(perPage);
+      })
+      .then((trips) => {
+        return trips.filter((trip) => {
+          searchItem = searchItem.toLowerCase();
+          const searchProps = searchBy.split(".");
+          let obj = trip;
+          for (const prop of searchProps) {
+            obj = obj[prop];
+            if (Array.isArray(obj)) {
+              if (prop === "companion") {
+                return obj.find((el) =>
+                  el.firstName.toString().toLowerCase().includes(searchItem)
+                );
+              }
+              return obj.find(
+                (el) => el && el.toString().toLowerCase().includes(searchItem)
+              );
+            }
+            if (!obj) return false;
+          }
+          return obj.toString().toLowerCase().includes(searchItem);
+        });
+      })
+      .then((result) => {
+        res.status(200).json({
+          message: "Fetch trip successfully",
+          data: result,
+          pagination: {
+            totalItems: totalItems,
+            currentPage: parseInt(currentPage),
+          },
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  } else {
+    Trip.find()
+      .populate("locations")
+      .populate("diesels")
+      .populate("user_id")
+      .populate("vehicle_id")
+      .sort({ createdAt: "desc" })
+      .then((trips) => {
+        return trips.filter((trip) => {
+          searchItem = searchItem.toLowerCase();
+          const searchProps = searchBy.split(".");
+          let obj = trip;
+          for (const prop of searchProps) {
+            obj = obj[prop];
+            if (Array.isArray(obj)) {
+              if (prop === "companion") {
+                return obj.find((el) =>
+                  el.firstName.toString().toLowerCase().includes(searchItem)
+                );
+              }
+              return obj.find(
+                (el) => el && el.toString().toLowerCase().includes(searchItem)
+              );
+            }
+            if (!obj) return false;
+          }
+          return obj.toString().toLowerCase().includes(searchItem);
+        });
+      })
+      .then((result) => {
+        res.status(200).json({
+          data:
+            perPage <= 0 || perPage === "undefined"
+              ? result
+              : result.slice(
+                  (currentPage - 1) * perPage,
+                  parseInt((currentPage - 1) * perPage) + parseInt(perPage)
+                ),
+          pagination: {
+            totalItems: result.length,
+            currentPage: parseInt(currentPage),
+          },
+        });
+      })
+      .catch((err) => {
+        if (!err.statusCode) {
+          err.statusCode = 500;
+        }
+        next(err);
+      });
+  }
 };
 
 exports.vehicleTrip = (req, res, next) => {
