@@ -407,6 +407,8 @@ exports.login = (req, res, next) => {
           last_name: loadedUser.last_name,
           trip_template: loadedUser.trip_template,
           permission: loadedUser.permission,
+          department: loadedUser?.department,
+          employee_id: loadedUser?.employee_id,
         },
         process.env.SECRET_KEY
         // { expiresIn: "12h" }

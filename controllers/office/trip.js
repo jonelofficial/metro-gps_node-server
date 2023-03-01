@@ -337,6 +337,8 @@ exports.getTrips = (req, res, next) => {
   let searchItem = req.query.search || "";
   const searchBy = req.query.searchBy || "_id";
   const dateItem = req.query.date;
+  const userDepartment = req?.department;
+  const employee_id = req?.employee_id;
 
   if (searchBy === "trip_date" || searchBy === "createdAt") {
     Trip.find({
@@ -345,28 +347,42 @@ exports.getTrips = (req, res, next) => {
         $lte: `${dateItem}T23:59:59`,
       },
     })
-      .countDocuments()
-      .then((count) => {
-        totalItems = count;
-        return Trip.find({
-          [searchBy]: {
-            $gte: `${dateItem}T00:00:00`,
-            $lte: `${dateItem}T23:59:59`,
-          },
-        })
-          .populate("locations")
-          .populate("diesels")
-          .populate("user_id")
-          .populate("vehicle_id")
-          .skip((currentPage - 1) * perPage)
-          .limit(perPage);
+      .populate("locations")
+      .populate("diesels")
+      .populate("user_id")
+      .populate("vehicle_id")
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage)
+      .sort({ createdAt: "desc" })
+      .then((trips) => {
+        const newTrip = trips.filter((trip) => {
+          // valdiation to not filter by department if user is audit or developer and support
+          if (
+            userDepartment === "INTERNAL AUDIT" ||
+            employee_id === "RDFFLFI-10861" ||
+            employee_id === "RDFFLFI-10693"
+          ) {
+            return trip;
+          } else {
+            return trip?.user_id?.department
+              .toString()
+              .includes(userDepartment);
+          }
+        });
+
+        return newTrip;
       })
       .then((result) => {
         res.status(200).json({
-          message: "Fetch trip successfully",
-          data: result,
+          data:
+            perPage <= 0 || perPage === "undefined"
+              ? result
+              : result.slice(
+                  (currentPage - 1) * perPage,
+                  parseInt((currentPage - 1) * perPage) + parseInt(perPage)
+                ),
           pagination: {
-            totalItems: totalItems,
+            totalItems: result.length,
             currentPage: parseInt(currentPage),
           },
         });
@@ -385,7 +401,22 @@ exports.getTrips = (req, res, next) => {
       .populate("vehicle_id")
       .sort({ createdAt: "desc" })
       .then((trips) => {
-        return trips.filter((trip) => {
+        const newTrip = trips.filter((trip) => {
+          // valdiation to not filter by department if user is audit or developer and support
+          if (
+            userDepartment === "INTERNAL AUDIT" ||
+            employee_id === "RDFFLFI-10861" ||
+            employee_id === "RDFFLFI-10693"
+          ) {
+            return trip;
+          } else {
+            return trip?.user_id?.department
+              .toString()
+              .includes(userDepartment);
+          }
+        });
+
+        return newTrip.filter((trip) => {
           searchItem = searchItem.toLowerCase();
           const searchProps = searchBy.split(".");
           let obj = trip;
@@ -394,7 +425,7 @@ exports.getTrips = (req, res, next) => {
             if (Array.isArray(obj)) {
               if (prop === "companion") {
                 return obj.find((el) =>
-                  el.firstName.toString().toLowerCase().includes(searchItem)
+                  el.first_name.toString().toLowerCase().includes(searchItem)
                 );
               }
               return obj.find(
