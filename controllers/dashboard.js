@@ -97,8 +97,13 @@ exports.LongestTravelDuration = (req, res, next) => {
     .populate("vehicle_id")
     .then((result) => {
       result.forEach((trip) => {
-        const startDate = dayjs(trip.locations[0].date);
-        const endDate = dayjs(trip.locations[trip.locations.length - 1].date);
+        // Add new locations to filter only for left and arrived
+        const newLocations = trip?.locations.filter(
+          (location) =>
+            location.status == "left" || location.status == "arrived"
+        );
+        const startDate = dayjs(newLocations[0].date);
+        const endDate = dayjs(newLocations[newLocations.length - 1].date);
         const duration = endDate.diff(startDate);
 
         filteredData.push({
