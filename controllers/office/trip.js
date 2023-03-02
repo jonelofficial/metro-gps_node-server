@@ -30,7 +30,7 @@ exports.createApkTrip = (req, res, next) => {
     .then(async (result) => {
       trip_id = result._id;
 
-      const locationsPromises = locations.map(async (location) => {
+      const locationsPromises = await locations.map(async (location) => {
         return Location.create({ trip_id: trip_id, ...location }).then(
           async (result) => {
             if (result?._id) {
@@ -43,7 +43,7 @@ exports.createApkTrip = (req, res, next) => {
         );
       });
 
-      const dieselsPromises = diesels.map(async (diesel) => {
+      const dieselsPromises = await diesels.map(async (diesel) => {
         return Diesel.create({ trip_id: trip_id, ...diesel }).then(
           async (result) => {
             if (result?._id) {
