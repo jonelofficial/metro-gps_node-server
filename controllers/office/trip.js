@@ -271,130 +271,103 @@ exports.getTrips = (req, res, next) => {
   const userDepartment = req?.department;
   const employee_id = req?.employee_id;
 
-  if (searchBy === "trip_date" || searchBy === "createdAt") {
-    Trip.find({
-      [searchBy]: {
-        $gte: `${dateItem}T00:00:00`,
-        $lte: `${dateItem}T23:59:59`,
-      },
-    })
-      .populate("locations")
-      .populate("diesels")
-      .populate("user_id")
-      .populate("vehicle_id")
-      .skip((currentPage - 1) * perPage)
-      .limit(perPage)
-      .sort({ createdAt: "desc" })
-      .then((trips) => {
-        const newTrip = trips.filter((trip) => {
-          // valdiation to not filter by department if user is audit or developer and support
-          if (
-            userDepartment === "INTERNAL AUDIT" ||
-            employee_id === "RDFFLFI-10861" ||
-            employee_id === "RDFFLFI-10693"
-          ) {
-            return trip;
-          } else {
-            return trip?.user_id?.department
-              .toString()
-              .includes(userDepartment);
-          }
-        });
-
-        return newTrip;
-      })
-      .then((result) => {
-        res.status(200).json({
-          data:
-            perPage <= 0 || perPage === "undefined"
-              ? result
-              : result.slice(
-                  (currentPage - 1) * perPage,
-                  parseInt((currentPage - 1) * perPage) + parseInt(perPage)
-                ),
-          pagination: {
-            totalItems: result.length,
-            currentPage: parseInt(currentPage),
+  Trip.find(
+    searchBy === "trip_date" || searchBy === "createdAt"
+      ? {
+          [searchBy]: {
+            $gte: `${dateItem}T00:00:00`,
+            $lte: `${dateItem}T23:59:59`,
           },
-        });
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
         }
-        next(err);
-      });
-  } else {
-    Trip.find()
-      .populate("locations")
-      .populate("diesels")
-      .populate("user_id", {
-        employee_id: 1,
-        first_name: 2,
-        last_name: 3,
-        department: 4,
-      })
-      .populate("vehicle_id", { plate_no: 1 })
-      .sort({ createdAt: "desc" })
-      .then((trips) => {
-        const newTrip = trips.filter((trip) => {
-          // valdiation to not filter by department if user is audit or developer and support
-          if (
-            userDepartment === "INTERNAL AUDIT" ||
-            employee_id === "RDFFLFI-10861" ||
-            employee_id === "RDFFLFI-10693"
-          ) {
-            return trip;
-          } else {
-            return trip?.user_id?.department
-              .toString()
-              .includes(userDepartment);
-          }
-        });
-
-        return newTrip.filter((trip) => {
-          searchItem = searchItem.toLowerCase();
-          const searchProps = searchBy.split(".");
-          let obj = trip;
-          for (const prop of searchProps) {
-            obj = obj[prop];
-            if (Array.isArray(obj)) {
-              if (prop === "companion") {
-                return obj.find((el) =>
-                  el.first_name.toString().toLowerCase().includes(searchItem)
-                );
-              }
-              return obj.find(
-                (el) => el && el.toString().toLowerCase().includes(searchItem)
-              );
+      : null
+  )
+    .countDocuments()
+    .then((count) => {
+      totalItems = count;
+      return Trip.find(
+        searchBy === "trip_date" || searchBy === "createdAt"
+          ? {
+              [searchBy]: {
+                $gte: `${dateItem}T00:00:00`,
+                $lte: `${dateItem}T23:59:59`,
+              },
             }
-            if (!obj) return false;
+          : null
+      )
+        .populate("locations")
+        .populate("diesels")
+        .populate("user_id", {
+          employee_id: 1,
+          first_name: 2,
+          last_name: 3,
+          department: 4,
+        })
+        .populate("vehicle_id", { plate_no: 1 })
+        .skip(searchItem !== "" ? null : (currentPage - 1) * perPage)
+        .limit(searchItem !== "" ? 0 : perPage)
+        .sort({ createdAt: "desc" })
+        .then((trips) => {
+          const newTrip = trips.filter((trip) => {
+            // valdiation to not filter by department if user is audit or developer and support
+            if (
+              userDepartment === "INTERNAL AUDIT" ||
+              employee_id === "RDFFLFI-10861" ||
+              employee_id === "RDFFLFI-10693"
+            ) {
+              return trip;
+            } else {
+              return trip?.user_id?.department
+                .toString()
+                .includes(userDepartment);
+            }
+          });
+
+          if (searchBy === "trip_date" || searchBy === "createdAt") {
+            return newTrip;
+          } else {
+            return newTrip.filter((trip) => {
+              searchItem = searchItem.toLowerCase();
+              const searchProps = searchBy.split(".");
+              let obj = trip;
+              for (const prop of searchProps) {
+                obj = obj[prop];
+                if (Array.isArray(obj)) {
+                  if (prop === "companion") {
+                    return obj.find((el) =>
+                      el.first_name
+                        .toString()
+                        .toLowerCase()
+                        .includes(searchItem)
+                    );
+                  }
+                  return obj.find(
+                    (el) =>
+                      el && el.toString().toLowerCase().includes(searchItem)
+                  );
+                }
+                if (!obj) return false;
+              }
+              return obj.toString().toLowerCase().includes(searchItem);
+            });
           }
-          return obj.toString().toLowerCase().includes(searchItem);
         });
-      })
-      .then((result) => {
-        res.status(200).json({
-          data:
-            perPage <= 0 || perPage === "undefined"
-              ? result
-              : result.slice(
-                  (currentPage - 1) * perPage,
-                  parseInt((currentPage - 1) * perPage) + parseInt(perPage)
-                ),
-          pagination: {
-            totalItems: result.length,
-            currentPage: parseInt(currentPage),
-          },
-        });
-      })
-      .catch((err) => {
-        if (!err.statusCode) {
-          err.statusCode = 500;
-        }
-        next(err);
+    })
+    .then((result) => {
+      res.status(200).json({
+        data: result,
+        pagination: {
+          totalItems: searchItem === "" ? totalItems : result.length,
+          limit: parseInt(perPage),
+          currentPage: parseInt(currentPage),
+        },
       });
-  }
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
 };
 
 exports.createTrip = async (req, res, next) => {
