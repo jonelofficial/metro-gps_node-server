@@ -67,7 +67,7 @@ exports.getStation = (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = req.query.limit || 0;
   const searchItem = req.query.search || "";
-  const searchBy = req.query.searchBy || "label";
+  const searchBy = req.query.searchBy === "_id" ? "label" : req.query.searchBy;
 
   GasStation.find({
     [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },

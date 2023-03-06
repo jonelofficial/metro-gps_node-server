@@ -217,7 +217,7 @@ exports.getUsers = (req, res, next) => {
   const perPage = req.query.limit || 0;
   const searchItem = req.query.search || "";
   const searchBy =
-    req.query.searchBy === null
+    req.query.searchBy === "_id"
       ? "employee_id"
       : req.query.searchBy || "employee_id";
   const dateItem = req.query.date;
@@ -268,7 +268,9 @@ exports.getUsers = (req, res, next) => {
         next(err);
       });
   } else {
-    User.find({ [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" } })
+    User.find({
+      [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
+    })
       .countDocuments()
       .then((count) => {
         totalItems = count;
