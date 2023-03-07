@@ -17,6 +17,7 @@ exports.createApkTrip = (req, res, next) => {
   const tripObj = {
     user_id: req.userId,
     vehicle_id: req.body.vehicle_id,
+    charging: req.body.charging || null,
     odometer: req.body.odometer || null,
     odometer_done: req.body.odometer_done || null,
     odometer_image_path: newImageUrl || null,

@@ -40,6 +40,9 @@ const tripSchema = new Schema(
     others: {
       type: String,
     },
+    charging: {
+      type: String,
+    },
     companion: {
       type: JSON,
     },
