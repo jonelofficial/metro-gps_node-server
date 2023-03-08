@@ -12,10 +12,7 @@ const vehicleRoutes = require("./routes/vehicle");
 const gasStationRoutes = require("./routes/gas_station");
 
 const officeTripRoutes = require("./routes/office/trip");
-const officeDieselStationRoutes = require("./routes/office/diesel");
-const officeLocationStationRoutes = require("./routes/office/location");
 
-const officeReportsRoutes = require("./routes/office/reports");
 const dashboardRoutes = require("./routes/dashboard");
 
 const app = express();
@@ -50,12 +47,7 @@ app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
 app.use("/images", express.static(path.join(__dirname, "images")));
 
 // END IMAGE UPLOAD
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader("Access-Control-Allow-Origin", "GET, POST, PUT, PATCH, DELETE");
-//   res.setHeader("Access-Control-Allow-Origin", "Content-Type , Authorization");
-//   next();
-// });
+
 app.use(
   cors({
     origin: "*",
@@ -74,15 +66,11 @@ app.use("/gas-station", gasStationRoutes);
 
 // Office Routes
 app.use("/office", officeTripRoutes);
-app.use("/office", officeLocationStationRoutes);
-app.use("/office", officeDieselStationRoutes);
 
 // Hauling Routes
 // Delivery Routes
 // Feeds Delivery Routes
 
-// Portal Reports
-app.use("/reports-office", officeReportsRoutes);
 // Dashboard
 app.use("/dashboard", dashboardRoutes);
 
