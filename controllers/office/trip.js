@@ -256,6 +256,7 @@ exports.updateTrip = (req, res, next) => {
   const companion = req.body.companion || null;
   const others = req.body.others || null;
   const points = req.body.points || null;
+  const charging = req.body.charging || null;
 
   Trip.findById(tripId)
     .then((trip) => {
@@ -279,6 +280,7 @@ exports.updateTrip = (req, res, next) => {
       trip.companion = companion || trip.companion;
       trip.others = others || trip.others;
       trip.points = points || trip.points;
+      trip.charging = charging || trip.charging;
 
       return Trip.findOneAndUpdate(
         { _id: trip._id },
@@ -291,6 +293,7 @@ exports.updateTrip = (req, res, next) => {
           companion: companion || trip.companion,
           others: others || trip.others,
           points: points || trip.points,
+          charging: charging || trip.charging,
         }
       )
         .populate("locations")
