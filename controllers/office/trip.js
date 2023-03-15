@@ -162,9 +162,9 @@ exports.getTrips = (req, res, next) => {
   const searchBy = req.query.searchBy || "_id";
   const dateItem = req.query.date;
   const userDepartment = req?.department;
-  const employee_id = req?.employee_id;
+  const employeeId = req?.employee_id;
 
-  Trip.find(
+  const filter =
     searchBy === "trip_date" || searchBy === "createdAt"
       ? {
           [searchBy]: {
@@ -172,21 +172,13 @@ exports.getTrips = (req, res, next) => {
             $lte: `${dateItem}T23:59:59`,
           },
         }
-      : null
-  )
+      : {};
+
+  Trip.find(filter)
     .countDocuments()
     .then((count) => {
       totalItems = count;
-      return Trip.find(
-        searchBy === "trip_date" || searchBy === "createdAt"
-          ? {
-              [searchBy]: {
-                $gte: `${dateItem}T00:00:00`,
-                $lte: `${dateItem}T23:59:59`,
-              },
-            }
-          : null
-      )
+      return Trip.find(filter)
         .populate("locations")
         .populate("diesels")
         .populate("user_id", {
@@ -204,8 +196,8 @@ exports.getTrips = (req, res, next) => {
             // valdiation to not filter by department if user is audit or developer and support
             if (
               userDepartment === "INTERNAL AUDIT" ||
-              employee_id === "RDFFLFI-10861" ||
-              employee_id === "RDFFLFI-10693"
+              employeeId === "RDFFLFI-10861" ||
+              employeeId === "RDFFLFI-10693"
             ) {
               return trip;
             } else {
