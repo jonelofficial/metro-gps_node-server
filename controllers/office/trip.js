@@ -3,59 +3,82 @@ const path = require("path");
 const Trip = require("../../models/office/trip");
 const Location = require("../../models/office/location");
 const Diesel = require("../../models/office/diesel");
+const { validationResult } = require("express-validator");
 
 exports.createApkTrip = (req, res, next) => {
   let newImageUrl;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Validation failed");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
   if (req.file) {
     newImageUrl = req.file.path.replace("\\", "/");
   }
 
   let trip_id;
-  const diesels = JSON.parse(req.body.diesels) || [];
-  const locations = JSON.parse(req.body.locations) || [];
+
+  const {
+    vehicle_id,
+    charging,
+    odometer,
+    odometer_done,
+    companion,
+    others,
+    points,
+    trip_date,
+  } = req.body;
 
   const tripObj = {
     user_id: req.userId,
-    vehicle_id: req.body.vehicle_id,
-    charging: req.body.charging || null,
-    odometer: req.body.odometer || null,
-    odometer_done: req.body.odometer_done || null,
+    vehicle_id,
+    charging: charging || null,
+    odometer: odometer || null,
+    odometer_done: odometer_done || null,
     odometer_image_path: newImageUrl || null,
-    companion: JSON.parse(req.body.companion) || null,
-    others: req.body.others || "",
-    points: JSON.parse(req.body.points) || [],
-    trip_date: req.body.trip_date || new Date(),
+    companion: JSON.parse(companion) || null,
+    others: others || "",
+    points: JSON.parse(points) || [],
+    trip_date: trip_date || new Date(),
   };
 
   Trip.create(tripObj)
-    .then(async (result) => {
+    .then((result) => {
       trip_id = result._id;
 
-      const locationsPromises = await locations.map(async (location) => {
-        return Location.create({ trip_id: trip_id, ...location }).then(
-          async (result) => {
-            if (result?._id) {
-              await Trip.findById({ _id: trip_id }).then((trip) => {
-                trip.locations.push(result._id);
-                return trip.save();
-              });
+      const locationsPromises = (JSON.parse(req.body.locations) || []).map(
+        (location) => {
+          return Location.create({ trip_id: trip_id, ...location }).then(
+            async (result) => {
+              if (result?._id) {
+                await Trip.updateOne(
+                  { _id: trip_id },
+                  { $push: { locations: result._id } }
+                );
+              }
             }
-          }
-        );
-      });
+          );
+        }
+      );
 
-      const dieselsPromises = await diesels.map(async (diesel) => {
-        return Diesel.create({ trip_id: trip_id, ...diesel }).then(
-          async (result) => {
-            if (result?._id) {
-              await Trip.findById({ _id: trip_id }).then((trip) => {
-                trip.diesels.push(result._id);
-                return trip.save();
-              });
+      const dieselsPromises = (JSON.parse(req.body.diesels) || []).map(
+        (diesel) => {
+          return Diesel.create({ trip_id: trip_id, ...diesel }).then(
+            async (result) => {
+              if (result?._id) {
+                await Trip.updateOne(
+                  { _id: trip_id },
+                  { $push: { diesels: result._id } }
+                );
+              }
             }
-          }
-        );
-      });
+          );
+        }
+      );
 
       return Promise.all([...locationsPromises, ...dieselsPromises]);
     })
