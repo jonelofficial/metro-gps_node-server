@@ -113,7 +113,7 @@ exports.getApkTrips = (req, res, next) => {
   let searchItem = req.query.search || "";
   const dateItem = req.query.date;
 
-  Trip.find(
+  const filter =
     dateItem !== "null"
       ? {
           user_id: searchItem,
@@ -122,8 +122,9 @@ exports.getApkTrips = (req, res, next) => {
             $lte: `${dateItem}T23:59:59`,
           },
         }
-      : { user_id: searchItem }
-  )
+      : { user_id: searchItem };
+
+  Trip.find(filter)
     .populate("locations")
     .populate("diesels")
     .populate("user_id", {
