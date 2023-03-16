@@ -118,6 +118,7 @@ exports.updateUser = (req, res, next) => {
   const company = req.body.company;
   const permission =
     (req.body?.permission && JSON.parse(req.body.permission)) || null;
+  const show_all_departments = req.body.show_all_departments;
   // image validation here
 
   User.findById(userId)
@@ -156,6 +157,8 @@ exports.updateUser = (req, res, next) => {
               division_category || user.division_category;
             user.company = company || user.company;
             user.permission = permission || user.permission;
+            user.show_all_departments =
+              show_all_departments || user.show_all_departments;
             return user.save();
           })
           .then((result) => {
@@ -333,6 +336,7 @@ exports.createUser = (req, res, next) => {
   const company = req.body.company;
   const permission =
     (req.body?.permission && JSON.parse(req.body.permission)) || null;
+  const show_all_departments = req.body.show_all_departments;
 
   bcrypt
     .hash(password, 12)
@@ -355,6 +359,7 @@ exports.createUser = (req, res, next) => {
         division_category: division_category,
         company: company,
         permission: permission,
+        show_all_departments: show_all_departments,
       });
       return user.save();
     })
@@ -409,8 +414,8 @@ exports.login = (req, res, next) => {
           last_name: loadedUser.last_name,
           trip_template: loadedUser.trip_template,
           permission: loadedUser.permission,
+          show_all_departments: loadedUser?.show_all_departments,
           department: loadedUser?.department,
-          employee_id: loadedUser?.employee_id,
         },
         process.env.SECRET_KEY
         // { expiresIn: "12h" }

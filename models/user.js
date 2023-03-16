@@ -62,6 +62,10 @@ const userSchema = new Schema(
     permission: {
       type: JSON,
     },
+    show_all_departments: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

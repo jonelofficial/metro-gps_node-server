@@ -163,7 +163,7 @@ exports.getTrips = (req, res, next) => {
   const searchBy = req.query.searchBy || "_id";
   const dateItem = req.query.date;
   const userDepartment = req?.department;
-  const employeeId = req?.employee_id;
+  const show_all_departments = req?.show_all_departments;
 
   const filter =
     searchBy === "trip_date" || searchBy === "createdAt"
@@ -195,11 +195,7 @@ exports.getTrips = (req, res, next) => {
         .then((trips) => {
           const newTrip = trips.filter((trip) => {
             // valdiation to not filter by department if user is audit or developer and support
-            if (
-              userDepartment === "INTERNAL AUDIT" ||
-              employeeId === "RDFFLFI-10861" ||
-              employeeId === "RDFFLFI-10693"
-            ) {
+            if (show_all_departments) {
               return trip;
             } else {
               return trip?.user_id?.department
