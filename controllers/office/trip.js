@@ -189,8 +189,6 @@ exports.getTrips = (req, res, next) => {
           department: 4,
         })
         .populate("vehicle_id", { plate_no: 1 })
-        .skip(searchItem !== "" ? null : (currentPage - 1) * perPage)
-        .limit(searchItem !== "" ? 0 : perPage)
         .sort({ createdAt: "desc" })
         .then((trips) => {
           const newTrip = trips.filter((trip) => {
@@ -236,9 +234,15 @@ exports.getTrips = (req, res, next) => {
     })
     .then((result) => {
       res.status(200).json({
-        data: result,
+        data:
+          perPage <= 0 || perPage === "undefined"
+            ? result
+            : result.slice(
+                (currentPage - 1) * perPage,
+                parseInt((currentPage - 1) * perPage) + parseInt(perPage)
+              ),
         pagination: {
-          totalItems: searchItem === "" ? totalItems : result.length,
+          totalItems: result.length,
           limit: parseInt(perPage),
           currentPage: parseInt(currentPage),
         },
