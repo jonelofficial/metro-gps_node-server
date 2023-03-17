@@ -220,8 +220,6 @@ exports.updateVehicle = (req, res, next) => {
 
   const profile = newImageURL || null;
 
-  console.log(vehicleId);
-
   Vehicle.find({ plate_no: plate_no })
     .then((result) => {
       if (

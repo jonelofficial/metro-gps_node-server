@@ -4,6 +4,10 @@ const path = require("path");
 const bodyParse = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const helmet = require("helmet");
+const compression = require("compression");
+const morgan = require("morgan");
+const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 require("dotenv").config({ path: "/.env" });
 
@@ -39,15 +43,14 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// request file size
-app.use(bodyParse.json({ limit: "100mb" }));
-app.use(bodyParse.urlencoded({ limit: "100mb", extended: true }));
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, "access.log"),
+  { flags: "a" }
+);
 
-app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
-app.use("/images", express.static(path.join(__dirname, "images")));
-
-// END IMAGE UPLOAD
-
+app.use(helmet());
+app.use(compression());
+app.use(morgan("combined", { stream: accessLogStream }));
 app.use(
   cors({
     origin: "*",
@@ -56,6 +59,15 @@ app.use(
     optionsSuccessStatus: 204,
   })
 );
+
+// request file size
+app.use(bodyParse.json({ limit: "100mb" }));
+app.use(bodyParse.urlencoded({ limit: "100mb", extended: true }));
+
+app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
+app.use("/images", express.static(path.join(__dirname, "images")));
+
+// END IMAGE UPLOAD
 
 // Authentication
 app.use("/auth", authRoutes);
@@ -84,13 +96,5 @@ app.use((error, req, res, next) => {
 // Database connection
 mongoose
   .connect(process.env.DB_CONN)
-  .then(() =>
-    app.listen(process.env.PORT || 8080, function () {
-      console.log(
-        "Express server listening on port %d in %s mode",
-        this.address().port,
-        app.settings.env
-      );
-    })
-  )
+  .then(() => app.listen(process.env.PORT || 8080))
   .catch((err) => console.log(err));
