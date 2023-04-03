@@ -16,6 +16,7 @@ const vehicleRoutes = require("./routes/vehicle");
 const gasStationRoutes = require("./routes/gas_station");
 
 const officeTripRoutes = require("./routes/office/trip");
+const depotTripRoutes = require("./routes/depot/trip");
 
 const dashboardRoutes = require("./routes/dashboard");
 
@@ -79,8 +80,8 @@ app.use("/gas-station", gasStationRoutes);
 // Office Routes
 app.use("/office", officeTripRoutes);
 
-// Hauling Routes
-// Delivery Routes
+// Depot Routes
+app.use("/depot", depotTripRoutes);
 // Feeds Delivery Routes
 
 // Dashboard
