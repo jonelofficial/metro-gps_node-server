@@ -60,16 +60,16 @@ const tripSchema = new Schema(
       type: JSON,
     },
     temperature: {
-      type: Number,
+      type: JSON,
     },
     tare_weight: {
-      type: Number,
+      type: JSON,
     },
     gross_weight: {
-      type: Number,
+      type: JSON,
     },
-    net_weigth: {
-      type: Number,
+    net_weight: {
+      type: JSON,
     },
     doa_count: {
       type: Number,
