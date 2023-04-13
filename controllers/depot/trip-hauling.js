@@ -55,14 +55,15 @@ exports.createApkTripHauling = (req, res, next) => {
     vehicle_id: vehicle_id,
     odometer: odometer,
     odometer_done: odometer_done || null,
-    companion: companion || null,
+    odometer_image_path: newImageUrl || null,
+    companion: companion || [],
     others: others || "",
     points: (points && JSON.parse(points)) || [],
     charging: charging || null,
-    temperature: temperature || null,
-    tare_weight: tare_weight || null,
-    gross_weight: gross_weight || null,
-    net_weight: net_weight || null,
+    temperature: (temperature && JSON.parse(temperature)) || [],
+    tare_weight: (tare_weight && JSON.parse(tare_weight)) || [],
+    gross_weight: (gross_weight && JSON.parse(gross_weight)) || [],
+    net_weight: (net_weight && JSON.parse(net_weight)) || [],
     doa_count: doa_count || null,
   };
 
@@ -120,6 +121,54 @@ exports.createApkTripHauling = (req, res, next) => {
       res
         .status(201)
         .json({ message: "Done creating apk hauling trip", data: trip });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.getApkTripHauling = (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = req.query.limit || 25;
+  let searchItem = req.query.search || "";
+  const dateItem = req.query.date;
+
+  const filter =
+    dateItem !== "null"
+      ? {
+          user_id: req.userId,
+          ["trip_date"]: {
+            $gte: `${dateItem}T00:00:00`,
+            $lte: `${dateItem}T23:59:59`,
+          },
+        }
+      : { user_id: req.userId };
+
+  TripHauling.find(filter)
+    .populate("locations")
+    .populate("diesels")
+    .populate("user_id", {
+      employee_id: 1,
+      first_name: 2,
+      last_name: 3,
+      department: 4,
+      trip_template: 5,
+    })
+    .populate("vehicle_id", { plate_no: 1, name: 2 })
+    .sort({ createdAt: "desc" })
+    .skip((currentPage - 1) * perPage)
+    .limit(perPage)
+    .then((result) => {
+      res.status(200).json({
+        data: result,
+        pagination: {
+          totalItems: result.length,
+          currentPage: parseInt(currentPage),
+        },
+      });
     })
     .catch((err) => {
       if (!err.statusCode) {

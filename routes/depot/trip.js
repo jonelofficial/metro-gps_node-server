@@ -6,6 +6,11 @@ const tripDeliveryController = require("../../controllers/depot/trip-delivery");
 const isAuth = require("../../middleware/is-auth");
 
 // Hauling
+router.get(
+  "/apk-trips-hauling",
+  isAuth,
+  tripHauilingController.getApkTripHauling
+);
 router.get("/trips-hauling", isAuth, tripHauilingController.getTripHauling);
 router.post(
   "/trip-hauling",
