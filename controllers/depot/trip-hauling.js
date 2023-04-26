@@ -56,7 +56,7 @@ exports.createApkTripHauling = (req, res, next) => {
     odometer: odometer,
     odometer_done: odometer_done || null,
     odometer_image_path: newImageUrl || null,
-    companion: companion || [],
+    companion: JSON.parse(companion) || [],
     others: others || "",
     points: (points && JSON.parse(points)) || [],
     charging: charging || null,
