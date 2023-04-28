@@ -108,7 +108,10 @@ exports.createApkTripHauling = (req, res, next) => {
         },
         { new: true }
       )
-        .populate("locations")
+        .populate({
+          path: "locations",
+          options: { sort: { date: 1 } },
+        })
         .populate("diesels")
         .populate("user_id", {
           employee_id: 1,
@@ -148,7 +151,10 @@ exports.getApkTripHauling = (req, res, next) => {
       : { user_id: req.userId };
 
   TripHauling.find(filter)
-    .populate("locations")
+    .populate({
+      path: "locations",
+      options: { sort: { date: 1 } },
+    })
     .populate("diesels")
     .populate("user_id", {
       employee_id: 1,
@@ -199,7 +205,10 @@ exports.getTripHauling = (req, res, next) => {
       : {};
 
   TripHauling.find(filter)
-    .populate("locations")
+    .populate({
+      path: "locations",
+      options: { sort: { date: 1 } },
+    })
     .populate("diesels")
     .populate("user_id", {
       employee_id: 1,

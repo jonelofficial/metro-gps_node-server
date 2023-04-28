@@ -84,7 +84,10 @@ exports.createApkTrip = (req, res, next) => {
     })
     .then(() => {
       Trip.findById({ _id: trip_id })
-        .populate("locations")
+        .populate({
+          path: "locations",
+          options: { sort: { date: 1 } },
+        })
         .populate("diesels")
         .populate("user_id", {
           employee_id: 1,
@@ -125,7 +128,10 @@ exports.getApkTrips = (req, res, next) => {
       : { user_id: searchItem };
 
   Trip.find(filter)
-    .populate("locations")
+    .populate({
+      path: "locations",
+      options: { sort: { date: 1 } },
+    })
     .populate("diesels")
     .populate("user_id", {
       employee_id: 1,
@@ -180,7 +186,10 @@ exports.getTrips = (req, res, next) => {
     .then((count) => {
       totalItems = count;
       return Trip.find(filter)
-        .populate("locations")
+        .populate({
+          path: "locations",
+          options: { sort: { date: 1 } },
+        })
         .populate("diesels")
         .populate("user_id", {
           employee_id: 1,
