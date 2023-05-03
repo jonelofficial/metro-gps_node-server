@@ -17,6 +17,11 @@ router.post(
   isAuth,
   tripHauilingController.createApkTripHauling
 );
+router.put(
+  "/trip-hauling/:tripId",
+  isAuth,
+  tripHauilingController.updateTripHauling
+);
 
 // Delivery
 router.get("/trips-delivery", isAuth, tripDeliveryController.getTripDelivery);

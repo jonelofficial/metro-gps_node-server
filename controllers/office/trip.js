@@ -296,17 +296,6 @@ exports.updateTrip = (req, res, next) => {
         clearImage(trip.odometer_image_path);
       }
 
-      trip.user_id = user_id || trip.user_id;
-      trip.vehicle_id = vehicle_id || trip.vehicle_id;
-      trip.odometer = odometer || trip.odometer;
-      trip.odometer_done = odometer_done || trip.odometer_done;
-      trip.odometer_image_path =
-        odometer_image_path || trip.odometer_image_path;
-      trip.companion = companion || trip.companion;
-      trip.others = others || trip.others;
-      trip.points = points || trip.points;
-      trip.charging = charging || trip.charging;
-
       return Trip.findOneAndUpdate(
         { _id: trip._id },
         {
@@ -319,7 +308,8 @@ exports.updateTrip = (req, res, next) => {
           others: others || trip.others,
           points: points || trip.points,
           charging: charging || trip.charging,
-        }
+        },
+        { new: true }
       )
         .populate("locations")
         .populate("diesels")

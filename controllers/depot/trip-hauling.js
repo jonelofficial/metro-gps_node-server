@@ -284,3 +284,61 @@ exports.getTripHauling = (req, res, next) => {
       next(err);
     });
 };
+
+exports.updateTripHauling = (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const error = new Error("Valdiation failed");
+    error.statusCode = 422;
+    error.data = errors.array();
+    throw error;
+  }
+
+  const tripId = req.params.tripId;
+  const {
+    odometer,
+    odometer_done,
+    temperature,
+    tare_weight,
+    net_weight,
+    gross_weight,
+    doa_count,
+    item_count,
+    charging,
+  } = req.body;
+
+  TripHauling.findById(tripId)
+    .then((trip) => {
+      if (!trip) {
+        const error = new Error("Could not find trip");
+        res.status(404).json({ message: "Could not find trip" });
+        error.statusCode = 404;
+        throw error;
+      }
+
+      return TripHauling.findOneAndUpdate(
+        { _id: trip._id },
+        {
+          odometer: odometer || trip.odometer,
+          odometer_done: odometer_done || trip.odometer_done,
+          temperature: temperature || trip.temperature,
+          tare_weight: tare_weight || trip.tare_weight,
+          net_weight: net_weight || trip.net_weight,
+          gross_weight: gross_weight || trip.gross_weight,
+          doa_count: doa_count || trip.doa_count,
+          item_count: item_count || trip.item_count,
+          charging: charging || trip.charging,
+        },
+        { new: true }
+      );
+    })
+    .then((result) => {
+      res.status(201).json({ message: "done", data: result });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+    });
+};
