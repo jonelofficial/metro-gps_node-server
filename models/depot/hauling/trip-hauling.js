@@ -12,6 +12,10 @@ const tripSchema = new Schema(
       type: String,
       required: true,
     },
+    trip_category: {
+      type: String,
+      required: true,
+    },
     destination: {
       type: String,
       required: true,
@@ -72,6 +76,9 @@ const tripSchema = new Schema(
       type: JSON,
     },
     doa_count: {
+      type: Number,
+    },
+    item_count: {
       type: Number,
     },
   },

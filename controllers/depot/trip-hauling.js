@@ -30,6 +30,7 @@ exports.createApkTripHauling = (req, res, next) => {
   const {
     trip_date,
     trip_type,
+    trip_category,
     destination,
     farm,
     vehicle_id,
@@ -44,11 +45,13 @@ exports.createApkTripHauling = (req, res, next) => {
     gross_weight,
     net_weight,
     doa_count,
+    item_count,
   } = req.body;
 
   const tripObj = {
     user_id: req.userId,
     trip_date: trip_date || new Date(),
+    trip_category: trip_category,
     trip_type: trip_type,
     destination: destination,
     farm: farm,
@@ -65,6 +68,7 @@ exports.createApkTripHauling = (req, res, next) => {
     gross_weight: (gross_weight && JSON.parse(gross_weight)) || [],
     net_weight: (net_weight && JSON.parse(net_weight)) || [],
     doa_count: doa_count || null,
+    item_count: item_count || null,
   };
 
   let trip_id;
