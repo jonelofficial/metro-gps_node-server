@@ -3,18 +3,9 @@ const path = require("path");
 const Trip = require("../../models/office/trip");
 const Location = require("../../models/office/location");
 const Diesel = require("../../models/office/diesel");
-const { validationResult } = require("express-validator");
 
 exports.createApkTrip = (req, res, next) => {
   let newImageUrl;
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const error = new Error("Validation failed");
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
-  }
 
   if (req.file) {
     newImageUrl = req.file.path.replace("\\", "/");

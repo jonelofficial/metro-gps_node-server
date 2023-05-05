@@ -1,27 +1,9 @@
-const fs = require("fs");
-const path = require("path");
-
 const TripHauling = require("../../models/depot/hauling/trip-hauling");
 const Location = require("../../models/depot/hauling/location");
 const Diesel = require("../../models/depot/hauling/diesel");
-const { validationResult } = require("express-validator");
-const diesel = require("../../models/office/diesel");
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "../..", filePath);
-  fs.unlink(filePath, (err) => console.log(err));
-};
 
 exports.createApkTripHauling = (req, res, next) => {
   let newImageUrl;
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const error = new Error("Valdiation failed");
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
-  }
 
   if (req.file) {
     newImageUrl = req.file.path.replace("\\", "/");
@@ -75,7 +57,7 @@ exports.createApkTripHauling = (req, res, next) => {
 
   TripHauling.create(tripObj)
     .then(async (result) => {
-      trip_id = result;
+      trip_id = result._id;
 
       const locationsPromises = (JSON.parse(req.body.locations) || []).map(
         async (location) => {
@@ -140,7 +122,6 @@ exports.createApkTripHauling = (req, res, next) => {
 exports.getApkTripHauling = (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = req.query.limit || 25;
-  let searchItem = req.query.search || "";
   const dateItem = req.query.date;
 
   const filter =
@@ -173,6 +154,7 @@ exports.getApkTripHauling = (req, res, next) => {
     .limit(perPage)
     .then((result) => {
       res.status(200).json({
+        message: "Success get apk hauling trips",
         data: result,
         pagination: {
           totalItems: result.length,
@@ -263,6 +245,7 @@ exports.getTripHauling = (req, res, next) => {
     })
     .then((result) => {
       res.status(200).json({
+        message: "Success get hauling trips",
         data:
           perPage <= 0 || perPage === "undefined"
             ? result
@@ -286,15 +269,6 @@ exports.getTripHauling = (req, res, next) => {
 };
 
 exports.updateTripHauling = (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const error = new Error("Valdiation failed");
-    error.statusCode = 422;
-    error.data = errors.array();
-    throw error;
-  }
-
   const tripId = req.params.tripId;
   const {
     odometer,
@@ -334,7 +308,7 @@ exports.updateTripHauling = (req, res, next) => {
       );
     })
     .then((result) => {
-      res.status(201).json({ message: "done", data: result });
+      res.status(201).json({ message: "Done updating trip", data: result });
     })
     .catch((err) => {
       if (!err.statusCode) {

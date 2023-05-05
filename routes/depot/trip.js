@@ -25,5 +25,15 @@ router.put(
 
 // Delivery
 router.get("/trips-delivery", isAuth, tripDeliveryController.getTripDelivery);
+router.get(
+  "/apk-trips-delivery",
+  isAuth,
+  tripDeliveryController.getApkTripDelivery
+);
+router.post(
+  "/trip-delivery",
+  isAuth,
+  tripDeliveryController.createApkTripDelivery
+);
 
 module.exports = router;

@@ -12,6 +12,10 @@ const tripSchema = new Schema(
       type: String,
       required: true,
     },
+    trip_category: {
+      type: String,
+      required: true,
+    },
     destination: {
       type: String,
       required: true,
@@ -63,13 +67,13 @@ const tripSchema = new Schema(
       type: Number,
     },
     crates_dropped: {
-      type: Number,
+      type: JSON,
     },
     crates_collected: {
-      type: Number,
+      type: JSON,
     },
     crates_borrowed: {
-      type: Number,
+      type: JSON,
     },
   },
   { timestamps: true }
