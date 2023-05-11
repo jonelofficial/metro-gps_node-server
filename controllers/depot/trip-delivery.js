@@ -108,12 +108,6 @@ exports.createApkTripDelivery = (req, res, next) => {
       }
       next(err);
     });
-
-  res.status(200).json({
-    message: "Done creating apk hauling trip",
-    data: tripObj,
-    errors,
-  });
 };
 
 exports.getApkTripDelivery = (req, res, next) => {
@@ -122,7 +116,7 @@ exports.getApkTripDelivery = (req, res, next) => {
   const currentPage = query.page || 1;
   const perPage = query.limit || 25;
   const dateItem = query.date;
-  const userId = query.userId;
+  const userId = req.userId;
 
   const filter =
     dateItem !== "null"
