@@ -20,10 +20,6 @@ const tripSchema = new Schema(
       type: String,
       required: true,
     },
-    farm: {
-      type: String,
-      required: true,
-    },
     user_id: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -63,17 +59,14 @@ const tripSchema = new Schema(
     points: {
       type: JSON,
     },
-    temperature: {
-      type: JSON,
-    },
     tare_weight: {
-      type: JSON,
+      type: Number,
     },
     gross_weight: {
-      type: JSON,
+      type: Number,
     },
     net_weight: {
-      type: JSON,
+      type: Number,
     },
     doa_count: {
       type: Number,

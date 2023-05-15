@@ -20,10 +20,6 @@ const tripSchema = new Schema(
       type: String,
       required: true,
     },
-    route: {
-      type: String,
-      required: true,
-    },
     user_id: {
       type: Schema.Types.ObjectId,
       ref: "User",
