@@ -14,6 +14,7 @@ require("dotenv").config({ path: "/.env" });
 const authRoutes = require("./routes/auth");
 const vehicleRoutes = require("./routes/vehicle");
 const gasStationRoutes = require("./routes/gas_station");
+const tripApiDataRoutes = require("./routes/trip-api-data");
 
 const officeTripRoutes = require("./routes/office/trip");
 const depotTripRoutes = require("./routes/depot/trip");
@@ -76,6 +77,8 @@ app.use("/auth", authRoutes);
 app.use("/vehicle", vehicleRoutes);
 //  Gas Station
 app.use("/gas-station", gasStationRoutes);
+// Trip Category
+app.use("/api/data", tripApiDataRoutes);
 
 // Office Routes
 app.use("/office", officeTripRoutes);
