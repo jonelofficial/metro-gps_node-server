@@ -14,4 +14,4 @@ const tripTypeDeliverySchema = new Schema({
   },
 });
 
-module.exports = mongoose.model("TripTypeDelivery", tripTypeDeliverySchema);
+module.exports = mongoose.model("TripType", tripTypeDeliverySchema);

@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
-const TripCategory = require("../models/trip_category");
+const TripType = require("../models/trip_type");
 
-exports.createCategory = (req, res, next) => {
+exports.updateTripType = (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
     const errorMsg = [];
@@ -10,56 +10,52 @@ exports.createCategory = (req, res, next) => {
     throw err;
   }
 
-  const category = req.body.category;
+  const typeId = req.params.typeId;
+  const { type, trip_category } = req.body;
 
-  const tripCategory = new TripCategory({ category: category });
-
-  tripCategory
-    .save()
-    .then((result) => {
-      res.status(201).json({
-        message: "Success create trip category",
-        data: result,
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
-};
-
-exports.updateCategory = (req, res, next) => {
-  const error = validationResult(req);
-  if (!error.isEmpty()) {
-    const errorMsg = [];
-    error.errors.map((item) => errorMsg.push(item.msg));
-    const err = new Error(errorMsg);
-    throw err;
-  }
-
-  const category = req.body.category;
-  const categoryId = req.params.categoryId;
-
-  TripCategory.findById(categoryId)
+  TripType.findById(typeId)
     .then((isExist) => {
       if (!isExist) {
-        const error = new Error("Could not find data");
+        const error = new Error("Could not found data");
         error.statusCode = 404;
         throw error;
       }
-
-      return TripCategory.findOneAndUpdate(
-        { _id: categoryId },
-        { category: category },
+      return TripType.findOneAndUpdate(
+        { _id: typeId },
+        { type: type, trip_category: trip_category },
         { new: true }
       );
     })
     .then((result) => {
+      res.status(201).json({ message: "Success update station", data: result });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.createTripType = (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    const errorMsg = [];
+    error.errors.map((item) => errorMsg.push(item.msg));
+    const err = new Error(errorMsg);
+    throw err;
+  }
+
+  const { type, trip_category } = req.body;
+
+  const tripType = new TripType({ type: type, trip_category: trip_category });
+
+  tripType
+    .save()
+    .then((result) => {
       res.status(201).json({
-        message: "Success update station",
-        data: result,
+        message: "Success create trip type",
+        date: result,
       });
     })
     .catch((err) => {
@@ -70,36 +66,36 @@ exports.updateCategory = (req, res, next) => {
     });
 };
 
-exports.getCategory = (req, res, next) => {
+exports.getTripType = (req, res, next) => {
   const query = req.query;
 
   const currentPage = query.page || 1;
   const perPage = query.limit || 0;
   const searchItem = query.search || "";
-  const searchBy = query.searchBy === "_id" ? "category" : query.searchBy;
+  const searchBy = query.searchBy === "_id" ? "type" : query.searchBy;
 
   let totalItems;
 
-  TripCategory.find({
-    [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
+  TripType.find({
+    [searchBy]: { $regex: `.*.${searchItem}*`, $options: "i" },
   })
     .countDocuments()
     .then((count) => {
       totalItems = count;
 
-      return TripCategory.find({
+      return TripType.find({
         [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
       })
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
-        .sort({ createAt: "desc" });
+        .sort({ createdAt: "desc" });
     })
     .then((result) => {
       res.status(200).json({
-        message: "Success get trip category",
+        message: "Succes get trip type",
         data: result,
         pagination: {
-          totalItmes: totalItems,
+          totalItems: totalItems,
           limit: parseInt(perPage),
           currentPage: parseInt(currentPage),
         },
@@ -113,16 +109,21 @@ exports.getCategory = (req, res, next) => {
     });
 };
 
-exports.importTripCategories = async (req, res, next) => {
-  const categories = req.body;
+exports.importTripTypes = async (req, res, next) => {
+  const tripTypes = req.body;
 
-  if (categories.length > 0) {
-    for (const { category } of categories) {
+  if (tripTypes.length > 0) {
+    for (const { type, trip_category } of tripTypes) {
       try {
-        const isExist = await TripCategory.findOne({ category: category });
-
+        const isExist = await TripType.findOne({
+          type: type,
+          trip_category: trip_category,
+        });
         if (!isExist) {
-          await TripCategory.create({ category: category });
+          await TripType.create({
+            type: type,
+            trip_category: trip_category,
+          });
         }
       } catch (err) {
         if (!err.statusCode) {
@@ -132,7 +133,7 @@ exports.importTripCategories = async (req, res, next) => {
       }
     }
     res.status(200).json({
-      message: "Success import trip categories",
+      message: "Success import trip types",
     });
   } else {
     res.status(404).json({ message: "No item found" });

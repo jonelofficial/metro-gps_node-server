@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const haulingDestinations = new Schema({
+const Destination = new Schema({
   destination: {
     type: String,
     required: true,
@@ -18,4 +18,4 @@ const haulingDestinations = new Schema({
   },
 });
 
-module.exports = mongoose.model("haulingDestinations", haulingDestinations);
+module.exports = mongoose.model("Destination", Destination);
