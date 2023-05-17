@@ -278,7 +278,6 @@ exports.updateTrip = (req, res, next) => {
     .then((trip) => {
       if (!trip) {
         const error = new Error("Could not find trip");
-        res.status(404).json({ message: "Couldn not find user" });
         error.statusCode = 404;
         throw error;
       }
@@ -334,7 +333,6 @@ exports.deleteTrip = (req, res, next) => {
     .then((trip) => {
       if (!trip) {
         const error = new Error("Could not found trip");
-        res.status(404).json({ message: "Could not find user" });
         error.statusCode = 404;
         throw error;
       }

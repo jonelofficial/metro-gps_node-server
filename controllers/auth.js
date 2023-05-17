@@ -125,7 +125,6 @@ exports.updateUser = (req, res, next) => {
     .then((user) => {
       if (!user) {
         const error = new Error("Could not find user");
-        res.status(404).json({ message: "Could not find user" });
         error.statusCode = 404;
         throw error;
       }
@@ -191,7 +190,6 @@ exports.deleteUser = (req, res, next) => {
     .then((post) => {
       if (!post) {
         const error = new Error("Could not find user");
-        res.status(404).json({ message: "Could not find user" });
         error.statusCode = 404;
         throw error;
       }

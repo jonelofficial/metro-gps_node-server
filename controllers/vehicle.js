@@ -84,7 +84,6 @@ exports.getUserVehicle = (req, res, next) => {
       if (result.length === 0) {
         const error = new Error("Could not find vehicle");
         error.statusCode = 404;
-        res.status(404).json({ error: "Could not find vehicle" });
         throw error;
       }
 
@@ -332,7 +331,6 @@ exports.deleteVehicle = (req, res, next) => {
     .then((vehicle) => {
       if (!vehicle) {
         const error = new Error("Could not find vehicle");
-        res.status(404).json({ message: "Could not find vehicle" });
         error.statusCode = 404;
         throw error;
       }

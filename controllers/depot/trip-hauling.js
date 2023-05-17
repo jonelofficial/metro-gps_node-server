@@ -282,7 +282,6 @@ exports.updateTripHauling = (req, res, next) => {
     .then((trip) => {
       if (!trip) {
         const error = new Error("Could not find trip");
-        res.status(404).json({ message: "Could not find trip" });
         error.statusCode = 404;
         throw error;
       }
