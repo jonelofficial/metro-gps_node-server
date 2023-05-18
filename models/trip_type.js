@@ -6,7 +6,8 @@ const tripTypeDeliverySchema = new Schema({
   type: {
     type: String,
     required: true,
-    unique: true,
+    index: false,
+    unique: false,
   },
   trip_category: {
     type: String,

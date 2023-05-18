@@ -55,8 +55,8 @@ router.get("/trip-type", isAuth, tripTypeController.getTripType);
 router.post(
   "/trip-type",
   [
-    body("type").custom(async (value) => {
-      return await TripType.findOne({ type: value }).then((isExist) => {
+    body().custom(async (obj) => {
+      return await TripType.findOne(obj).then((isExist) => {
         if (isExist) {
           return Promise.reject("Type already exist");
         }

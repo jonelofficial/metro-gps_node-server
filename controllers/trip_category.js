@@ -99,7 +99,7 @@ exports.getCategory = (req, res, next) => {
         message: "Success get trip category",
         data: result,
         pagination: {
-          totalItmes: totalItems,
+          totalItems: totalItems,
           limit: parseInt(perPage),
           currentPage: parseInt(currentPage),
         },
