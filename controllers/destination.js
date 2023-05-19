@@ -86,14 +86,14 @@ exports.getDestinations = (req, res, next) => {
   let totalItems;
 
   Destination.find({
-    [searchBy]: { $regex: `.*${searchItem}.*`, $option: "i" },
+    [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
   })
     .countDocuments()
     .then((count) => {
       totalItems = count;
 
       return Destination.find({
-        [searchBy]: { $regex: `.*${searchItem}.*`, $option: "i" },
+        [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
       })
         .skip((currentPage - 1) * perPage)
         .limit(perPage)

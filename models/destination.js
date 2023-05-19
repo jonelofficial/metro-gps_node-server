@@ -6,6 +6,8 @@ const Destination = new Schema({
   destination: {
     type: String,
     required: true,
+    index: false,
+    unique: false,
   },
   trip_type: {
     type: String,
