@@ -11,7 +11,7 @@ exports.updateTripType = (req, res, next) => {
   }
 
   const typeId = req.params.typeId;
-  const { type, trip_category } = req.body;
+  const { type, trip_category, trip_template } = req.body;
 
   TripType.findById(typeId)
     .then((isExist) => {
@@ -22,7 +22,11 @@ exports.updateTripType = (req, res, next) => {
       }
       return TripType.findOneAndUpdate(
         { _id: typeId },
-        { type: type, trip_category: trip_category },
+        {
+          type: type,
+          trip_category: trip_category,
+          trip_template: trip_template,
+        },
         { new: true }
       );
     })
@@ -46,9 +50,13 @@ exports.createTripType = (req, res, next) => {
     throw err;
   }
 
-  const { type, trip_category } = req.body;
+  const { type, trip_category, trip_template } = req.body;
 
-  const tripType = new TripType({ type: type, trip_category: trip_category });
+  const tripType = new TripType({
+    type: type,
+    trip_category: trip_category,
+    trip_template: trip_template,
+  });
 
   tripType
     .save()
@@ -113,16 +121,18 @@ exports.importTripTypes = async (req, res, next) => {
   const tripTypes = req.body;
 
   if (tripTypes.length > 0) {
-    for (const { type, trip_category } of tripTypes) {
+    for (const { type, trip_category, trip_template } of tripTypes) {
       try {
         const isExist = await TripType.findOne({
           type: type,
           trip_category: trip_category,
+          trip_template: trip_template,
         });
         if (!isExist) {
           await TripType.create({
             type: type,
             trip_category: trip_category,
+            trip_template: trip_template,
           });
         }
       } catch (err) {

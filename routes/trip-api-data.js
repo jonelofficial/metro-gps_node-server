@@ -3,6 +3,9 @@ const { body } = require("express-validator");
 
 const router = express.Router();
 
+const tripTemplateController = require("../controllers/trip_template");
+const TripTemplate = require("../models/trip_template");
+
 const tripCategoryController = require("../controllers/trip_category");
 const TripCategory = require("../models/trip_category");
 
@@ -14,13 +17,49 @@ const Destination = require("../models/destination");
 
 const isAuth = require("../middleware/is-auth");
 
+// TRIP TEMPLATE
+router.get("/trip-template", isAuth, tripTemplateController.getTemplate);
+router.post(
+  "/trip-template",
+  [
+    body("template").custom(async (value) => {
+      return await TripTemplate.findOne({ template: value }).then((isExist) => {
+        if (isExist) {
+          return Promise.reject("Template already exist");
+        }
+      });
+    }),
+  ],
+  isAuth,
+  tripTemplateController.createTemplate
+);
+router.put(
+  "/trip-template/:templateId",
+  [
+    body("template").custom(async (value) => {
+      return await TripTemplate.findOne({ template: value }).then((isExist) => {
+        if (isExist) {
+          return Promise.reject("Template already exist");
+        }
+      });
+    }),
+  ],
+  isAuth,
+  tripTemplateController.updateTemplate
+);
+router.post(
+  "/import-trip-template",
+  isAuth,
+  tripTemplateController.importTemplate
+);
+
 // TRIP CATEGORY
 router.get("/trip-category", isAuth, tripCategoryController.getCategory);
 router.post(
   "/trip-category",
   [
-    body("category").custom(async (value) => {
-      return await TripCategory.findOne({ category: value }).then((isExist) => {
+    body().custom(async (obj) => {
+      return await TripCategory.findOne(obj).then((isExist) => {
         if (isExist) {
           return Promise.reject("Category already exist");
         }
@@ -33,8 +72,8 @@ router.post(
 router.put(
   "/trip-category/:categoryId",
   [
-    body("category").custom(async (value) => {
-      return await TripCategory.findOne({ category: value }).then((isExist) => {
+    body().custom(async (obj) => {
+      return await TripCategory.findOne(obj).then((isExist) => {
         if (isExist) {
           return Promise.reject("Category already exist");
         }

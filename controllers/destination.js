@@ -10,12 +10,13 @@ exports.createDestination = (req, res, next) => {
     throw err;
   }
 
-  const { destination, trip_type, trip_category } = req.body;
+  const { destination, trip_type, trip_category, trip_template } = req.body;
 
   const newDestination = new Destination({
     destination: destination,
     trip_type: trip_type,
     trip_category: trip_category,
+    trip_template: trip_template,
   });
 
   newDestination
@@ -43,7 +44,7 @@ exports.updateDestination = (req, res, next) => {
   }
 
   const destinationId = req.params.destinationId;
-  const { destination, trip_type, trip_category } = req.body;
+  const { destination, trip_type, trip_category, trip_template } = req.body;
 
   Destination.findById(destinationId)
     .then((isExist) => {
@@ -58,6 +59,7 @@ exports.updateDestination = (req, res, next) => {
           destination: destination,
           trip_type: trip_type,
           trip_category: trip_category,
+          trip_template: trip_template,
         },
         { new: true }
       );
@@ -122,18 +124,25 @@ exports.importDestinations = async (req, res, next) => {
   const destinations = req.body;
 
   if (destinations.length > 0) {
-    for (const { destination, trip_type, trip_category } of destinations) {
+    for (const {
+      destination,
+      trip_type,
+      trip_category,
+      trip_template,
+    } of destinations) {
       try {
         const isExist = await Destination.findOne({
           destination,
           trip_type,
           trip_category,
+          trip_template,
         });
         if (!isExist) {
           await Destination.create({
             destination,
             trip_type,
             trip_category,
+            trip_template,
           });
         }
       } catch (err) {

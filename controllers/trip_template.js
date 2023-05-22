@@ -1,7 +1,7 @@
 const { validationResult } = require("express-validator");
-const TripCategory = require("../models/trip_category");
+const TripTemplate = require("../models/trip_template");
 
-exports.createCategory = (req, res, next) => {
+exports.createTemplate = (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
     const errorMsg = [];
@@ -10,18 +10,15 @@ exports.createCategory = (req, res, next) => {
     throw err;
   }
 
-  const { category, trip_template } = req.body;
+  const { template } = req.body;
 
-  const tripCategory = new TripCategory({
-    category: category,
-    trip_template: trip_template,
-  });
+  const tripTemplate = new TripTemplate({ template: template });
 
-  tripCategory
+  tripTemplate
     .save()
     .then((result) => {
       res.status(201).json({
-        message: "Success create trip category",
+        message: "Success create trip template",
         data: result,
       });
     })
@@ -33,7 +30,7 @@ exports.createCategory = (req, res, next) => {
     });
 };
 
-exports.updateCategory = (req, res, next) => {
+exports.updateTemplate = (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
     const errorMsg = [];
@@ -42,11 +39,10 @@ exports.updateCategory = (req, res, next) => {
     throw err;
   }
 
-  const { category, trip_template } = req.body;
+  const { template } = req.body;
+  const templateId = req.params.templateId;
 
-  const categoryId = req.params.categoryId;
-
-  TripCategory.findById(categoryId)
+  TripTemplate.findById(templateId)
     .then((isExist) => {
       if (!isExist) {
         const error = new Error("Could not find data");
@@ -54,16 +50,16 @@ exports.updateCategory = (req, res, next) => {
         throw error;
       }
 
-      return TripCategory.findOneAndUpdate(
-        { _id: categoryId },
-        { category: category, trip_template: trip_template },
+      return TripTemplate.findOneAndUpdate(
+        { _id: templateId },
+        { template: template },
         { new: true }
       );
     })
     .then((result) => {
       res.status(201).json({
-        message: "Success update station",
-        data: result,
+        message: "Success update trip template",
+        date: result,
       });
     })
     .catch((err) => {
@@ -74,7 +70,7 @@ exports.updateCategory = (req, res, next) => {
     });
 };
 
-exports.getCategory = (req, res, next) => {
+exports.getTemplate = (req, res, next) => {
   const query = req.query;
 
   const currentPage = query.page || 1;
@@ -84,23 +80,23 @@ exports.getCategory = (req, res, next) => {
 
   let totalItems;
 
-  TripCategory.find({
+  TripTemplate.find({
     [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
   })
     .countDocuments()
     .then((count) => {
       totalItems = count;
 
-      return TripCategory.find({
+      return TripTemplate.find({
         [searchBy]: { $regex: `.*${searchItem}.*`, $options: "i" },
       })
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
-        .sort({ createAt: "desc" });
+        .sort({ createdAt: "desc" });
     })
     .then((result) => {
       res.status(200).json({
-        message: "Success get trip category",
+        message: "Success get trip template",
         data: result,
         pagination: {
           totalItems: totalItems,
@@ -117,22 +113,16 @@ exports.getCategory = (req, res, next) => {
     });
 };
 
-exports.importTripCategories = async (req, res, next) => {
-  const categories = req.body;
+exports.importTemplate = async (req, res, next) => {
+  const templates = req.body;
 
-  if (categories.length > 0) {
-    for (const { category, trip_template } of categories) {
+  if (templates.length > 0) {
+    for (const { template } of templates) {
       try {
-        const isExist = await TripCategory.findOne({
-          category: category,
-          trip_template: trip_template,
-        });
+        const isExist = await TripTemplate.findOne({ template: template });
 
         if (!isExist) {
-          await TripCategory.create({
-            category: category,
-            trip_template: trip_template,
-          });
+          await TripTemplate.create({ template: template });
         }
       } catch (err) {
         if (!err.statusCode) {
@@ -141,9 +131,7 @@ exports.importTripCategories = async (req, res, next) => {
         next(err);
       }
     }
-    res.status(200).json({
-      message: "Success import trip categories",
-    });
+    res.status(200).json({ message: "Success import trip template" });
   } else {
     res.status(404).json({ message: "No item found" });
   }
