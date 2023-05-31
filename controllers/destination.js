@@ -66,7 +66,7 @@ exports.updateDestination = (req, res, next) => {
     })
     .then((result) => {
       res
-        .status(201)
+        .status(200)
         .json({ message: "Success updating destination", data: result });
     })
     .catch((err) => {
@@ -102,7 +102,7 @@ exports.getDestinations = (req, res, next) => {
         .sort({ createdAt: "desc" });
     })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Success get destination",
         data: result,
         pagination: {

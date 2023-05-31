@@ -61,7 +61,7 @@ exports.updateCategory = (req, res, next) => {
       );
     })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Success update station",
         data: result,
       });
@@ -99,7 +99,7 @@ exports.getCategory = (req, res, next) => {
         .sort({ createAt: "desc" });
     })
     .then((result) => {
-      res.status(200).json({
+      res.status(201).json({
         message: "Success get trip category",
         data: result,
         pagination: {
@@ -141,7 +141,7 @@ exports.importTripCategories = async (req, res, next) => {
         next(err);
       }
     }
-    res.status(200).json({
+    res.status(201).json({
       message: "Success import trip categories",
     });
   } else {

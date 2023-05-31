@@ -57,7 +57,7 @@ exports.updateTemplate = (req, res, next) => {
       );
     })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Success update trip template",
         date: result,
       });
@@ -131,7 +131,7 @@ exports.importTemplate = async (req, res, next) => {
         next(err);
       }
     }
-    res.status(200).json({ message: "Success import trip template" });
+    res.status(201).json({ message: "Success import trip template" });
   } else {
     res.status(404).json({ message: "No item found" });
   }

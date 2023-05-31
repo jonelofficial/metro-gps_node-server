@@ -44,7 +44,7 @@ exports.importGasStations = async (req, res, next) => {
           })
           .then(() => {
             if (index === stations.length - 1) {
-              res.status(200).json({
+              res.status(201).json({
                 message: "Success import gas stations",
                 totalItem: stations.length,
               });
@@ -170,7 +170,7 @@ exports.updateStation = (req, res, next) => {
             return station.save();
           })
           .then((result) => {
-            res.status(201).json({
+            res.status(200).json({
               message: "Success update station",
               data: result,
             });
@@ -212,7 +212,7 @@ exports.deleteStation = (req, res, next) => {
       return GasStation.findByIdAndRemove(stationId);
     })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Success delete station",
         data: result,
       });

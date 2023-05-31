@@ -303,7 +303,7 @@ exports.updateTripHauling = (req, res, next) => {
       );
     })
     .then((result) => {
-      res.status(201).json({ message: "Done updating trip", data: result });
+      res.status(200).json({ message: "Done updating trip", data: result });
     })
     .catch((err) => {
       if (!err.statusCode) {

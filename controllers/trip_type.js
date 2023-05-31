@@ -31,7 +31,7 @@ exports.updateTripType = (req, res, next) => {
       );
     })
     .then((result) => {
-      res.status(201).json({ message: "Success update station", data: result });
+      res.status(200).json({ message: "Success update station", data: result });
     })
     .catch((err) => {
       if (!err.statusCode) {

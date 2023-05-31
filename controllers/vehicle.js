@@ -12,7 +12,7 @@ exports.deleteAllVehicles = async (req, res, next) => {
 
   await Vehicle.deleteMany({})
     .then(() => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Success delete all vehicles",
       });
     })
@@ -87,7 +87,7 @@ exports.getUserVehicle = (req, res, next) => {
         throw error;
       }
 
-      res.status(201).json({ message: "Success get vehicle", data: result });
+      res.status(200).json({ message: "Success get vehicle", data: result });
     })
     .catch((err) => {
       if (!err.statusCode) {
@@ -253,7 +253,7 @@ exports.updateVehicle = (req, res, next) => {
             return vehicle.save();
           })
           .then((result) => {
-            res.status(201).json({
+            res.status(200).json({
               message: "Success update vehicle",
               data: result,
             });
@@ -276,46 +276,6 @@ exports.updateVehicle = (req, res, next) => {
       }
       next(err);
     });
-
-  // Vehicle.findById(vehicleId)
-  //   .then((vehicle) => {
-  //     if (!vehicle) {
-  //       const error = new Error("Could not found vehicle");
-  //       error.statusCode = 500;
-  //       throw error;
-  //     }
-
-  //     if (
-  //       profile !== vehicle.profile &&
-  //       vehicle.profile &&
-  //       profile != undefined
-  //     ) {
-  //       clearImage(vehicle.profile);
-  //     }
-
-  //     vehicle.plate_no = plate_no || vehicle.plate_no;
-  //     vehicle.vehicle_type = vehicle_type || vehicle.vehicle_type;
-  //     vehicle.name = name || vehicle.name;
-  //     vehicle.brand = brand || vehicle.brand;
-  //     vehicle.fuel_type = fuel_type || vehicle.fuel_type;
-  //     vehicle.km_per_liter = km_per_liter || vehicle.km_per_liter;
-  //     vehicle.department = department || vehicle.department;
-  //     vehicle.profile = profile || vehicle.profile;
-
-  //     return vehicle.save();
-  //   })
-  //   .then((result) => {
-  //     res.status(201).json({
-  //       message: "Success update vehicle",
-  //       data: result,
-  //     });
-  //   })
-  //   .catch((err) => {
-  //     if (!err.statusCode) {
-  //       err.statusCode = 500;
-  //     }
-  //     next(err);
-  //   });
 };
 
 exports.deleteVehicle = (req, res, next) => {
@@ -339,7 +299,7 @@ exports.deleteVehicle = (req, res, next) => {
       return Vehicle.findByIdAndRemove(vehicleId);
     })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Success delete vehicle",
         data: result,
       });

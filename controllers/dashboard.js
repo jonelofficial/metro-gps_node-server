@@ -59,7 +59,7 @@ exports.TotalTripDriver = (req, res, next) => {
       });
     })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "done",
         data: result.slice(
           (page - 1) * limit,
@@ -141,7 +141,7 @@ exports.LongestTravelDuration = (req, res, next) => {
       });
     })
     .then((data) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "done",
         data: data.slice(
           (page - 1) * limit,
@@ -218,7 +218,7 @@ exports.HighestKMrun = (req, res, next) => {
       });
     })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "done",
         data: result.slice(
           (page - 1) * limit,
@@ -301,7 +301,7 @@ exports.TVDTdeparment = async (req, res, next) => {
             return obj.toString().toLowerCase().includes(searchItem);
           });
 
-          res.status(201).json({
+          res.status(200).json({
             message: "done",
             data: newObj.slice(
               (page - 1) * limit,

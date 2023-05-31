@@ -15,7 +15,7 @@ exports.deleteAllUsers = async (req, res, next) => {
 
   await User.deleteMany({})
     .then(() => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Success delete all users",
       });
     })
@@ -62,7 +62,7 @@ exports.importUsers = async (req, res, next) => {
           })
           .then(() => {
             if (index === users.length - 1) {
-              res.status(200).json({
+              res.status(201).json({
                 message: "Success import users",
                 totalItem: users.length,
               });
@@ -418,7 +418,7 @@ exports.login = (req, res, next) => {
         process.env.SECRET_KEY
         // { expiresIn: "12h" }
       );
-      res.status(201).json({ token: token });
+      res.status(200).json({ token: token });
     })
     .catch((err) => {
       if (!err.statusCode) {

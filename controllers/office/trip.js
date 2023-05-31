@@ -413,7 +413,7 @@ exports.deleteAllTrips = (req, res, next) => {
         }
       });
 
-      res.status(201).json({ message: "delete all trips successfully" });
+      res.status(200).json({ message: "delete all trips successfully" });
     })
     .catch((err) => {
       if (!err.statusCode) {
