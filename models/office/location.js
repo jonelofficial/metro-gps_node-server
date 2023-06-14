@@ -32,6 +32,9 @@ const locationSchema = new Schema({
   odometer: {
     type: Number,
   },
+  destination: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("LocationOffice", locationSchema);

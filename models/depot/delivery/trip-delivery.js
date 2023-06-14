@@ -62,13 +62,7 @@ const tripSchema = new Schema(
     temperature: {
       type: Number,
     },
-    crates_dropped: {
-      type: JSON,
-    },
-    crates_collected: {
-      type: JSON,
-    },
-    crates_borrowed: {
+    crates_transaction: {
       type: JSON,
     },
   },

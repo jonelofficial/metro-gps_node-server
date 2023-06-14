@@ -24,9 +24,7 @@ exports.createApkTripDelivery = (req, res, next) => {
     companion,
     points,
     temperature,
-    crates_dropped,
-    crates_collected,
-    crates_borrowed,
+    crates_transaction,
   } = req.body;
 
   const tripObj = {
@@ -44,9 +42,8 @@ exports.createApkTripDelivery = (req, res, next) => {
     companion: (companion && JSON.parse(companion)) || [],
     points: (points && JSON.parse(points)) || [],
     temperature,
-    crates_dropped: (crates_dropped && JSON.parse(crates_dropped)) || [],
-    crates_collected: (crates_collected && JSON.parse(crates_collected)) || [],
-    crates_borrowed: (crates_borrowed && JSON.parse(crates_borrowed)) || [],
+    crates_transaction:
+      (crates_transaction && JSON.parse(crates_transaction)) || [],
   };
 
   let trip_id;
