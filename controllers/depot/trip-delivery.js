@@ -241,3 +241,33 @@ exports.getTripDelivery = (req, res, next) => {
       next(err);
     });
 };
+
+exports.updateTripDelivery = (req, res, next) => {
+  const tripId = req.params.tripId;
+
+  const { charging } = req.body;
+
+  TripDelivery.findById(tripId)
+    .then((trip) => {
+      if (!trip) {
+        const error = new Error("Could not find trip");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      return TripDelivery.findOneAndUpdate(
+        { _id: trip._id },
+        { charging: charging || trip.charging },
+        { new: true }
+      );
+    })
+    .then((result) => {
+      res.status(200).json({ message: "Done updating trip", data: result });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};

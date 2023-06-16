@@ -35,5 +35,9 @@ router.post(
   isAuth,
   tripDeliveryController.createApkTripDelivery
 );
-
+router.put(
+  "/trip-delivery/:tripId",
+  isAuth,
+  tripDeliveryController.updateTripDelivery
+);
 module.exports = router;
