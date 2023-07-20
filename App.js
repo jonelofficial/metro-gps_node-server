@@ -18,6 +18,7 @@ const tripApiDataRoutes = require("./routes/trip-api-data");
 
 const officeTripRoutes = require("./routes/office/trip");
 const depotTripRoutes = require("./routes/depot/trip");
+const liveTripRoutes = require("./routes/live/trip");
 
 const dashboardRoutes = require("./routes/dashboard");
 
@@ -77,7 +78,7 @@ app.use("/auth", authRoutes);
 app.use("/vehicle", vehicleRoutes);
 //  Gas Station
 app.use("/gas-station", gasStationRoutes);
-// Trip Category
+// Trip Template, Category , Type , Destination
 app.use("/api/data", tripApiDataRoutes);
 
 // Office Routes
@@ -85,7 +86,9 @@ app.use("/office", officeTripRoutes);
 
 // Depot Routes
 app.use("/depot", depotTripRoutes);
+
 // Feeds Delivery Routes
+app.use("/live", liveTripRoutes);
 
 // Dashboard
 app.use("/dashboard", dashboardRoutes);
