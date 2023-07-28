@@ -67,28 +67,36 @@ app.use(
 app.use(bodyParse.json({ limit: "100mb" }));
 app.use(bodyParse.urlencoded({ limit: "100mb", extended: true }));
 
-app.use(multer({ storage: storage, fileFilter: fileFilter }).single("image"));
+const uploadImage = multer({ storage: storage, fileFilter: fileFilter }).single(
+  "image"
+);
+
+const uploadOdometer = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+}).array("images");
+
 app.use("/images", express.static(path.join(__dirname, "images")));
 
 // END IMAGE UPLOAD
 
 // Authentication
-app.use("/auth", authRoutes);
+app.use("/auth", uploadImage, authRoutes);
 // Vehicle
-app.use("/vehicle", vehicleRoutes);
+app.use("/vehicle", uploadImage, vehicleRoutes);
 //  Gas Station
 app.use("/gas-station", gasStationRoutes);
 // Trip Template, Category , Type , Destination
 app.use("/api/data", tripApiDataRoutes);
 
 // Office Routes
-app.use("/office", officeTripRoutes);
+app.use("/office", uploadOdometer, officeTripRoutes);
 
 // Depot Routes
-app.use("/depot", depotTripRoutes);
+app.use("/depot", uploadOdometer, depotTripRoutes);
 
 // Feeds Delivery Routes
-app.use("/live", liveTripRoutes);
+app.use("/live", uploadOdometer, liveTripRoutes);
 
 // Dashboard
 app.use("/dashboard", dashboardRoutes);
