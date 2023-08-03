@@ -3,10 +3,12 @@ const Location = require("../../models/depot/delivery/location");
 const Diesel = require("../../models/depot/delivery/diesel");
 
 exports.createApkTripDelivery = (req, res, next) => {
-  let newImageUrl;
+  let odometer_image_path;
+  let odometer_done_image_path;
 
-  if (req.file) {
-    newImageUrl = req.file.path.replace("\\", "/");
+  if (req.files.length >= 2) {
+    odometer_image_path = req.files[0].path.replace("\\", "/");
+    odometer_done_image_path = req.files[1].path.replace("\\", "/");
   }
 
   const {
@@ -36,7 +38,8 @@ exports.createApkTripDelivery = (req, res, next) => {
     vehicle_id,
     odometer,
     odometer_done,
-    odometer_image_path: newImageUrl || null,
+    odometer_image_path: odometer_image_path || null,
+    odometer_done_image_path: odometer_done_image_path || null,
     others,
     charging,
     companion: (companion && JSON.parse(companion)) || [],
