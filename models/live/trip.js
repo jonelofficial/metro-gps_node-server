@@ -55,6 +55,9 @@ const tripSchema = new Schema(
     total_bags_delivered: {
       type: Number,
     },
+    transactions: {
+      type: JSON,
+    },
   },
   { timestamps: true }
 );

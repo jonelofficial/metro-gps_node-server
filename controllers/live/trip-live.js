@@ -78,6 +78,7 @@ exports.createApkTripLive = (req, res, next) => {
     trip_type,
     total_bags,
     total_bags_delivered,
+    transactions,
   } = req.body;
 
   const tripObj = {
@@ -95,6 +96,7 @@ exports.createApkTripLive = (req, res, next) => {
     trip_type,
     total_bags,
     total_bags_delivered,
+    transactions: (transactions && JSON.parse(transactions)) || [],
   };
 
   let trip_id;
